@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import httpx
 
-from data.personas import PERSONAS, BIAS_REFERENCES, get_persona, load_soul
+from data.personas import PERSONAS, BIAS_REFERENCES, get_persona, load_soul, OPENCLAW_AGENT_MAP
 from models.database import get_stock_by_ticker
 from tools.yfinance_fetch import fetch_fundamentals, fetch_news, fetch_price_history
 
@@ -298,6 +298,8 @@ INSTRUCTIONS:
     references = get_bias_references(biases_used)
     hallucinations = get_hallucinations(persona_id, n=2)
 
+    agent_name = OPENCLAW_AGENT_MAP.get(persona_id)
+
     return {
         "ticker": ticker,
         "stock_name": name,
@@ -315,6 +317,9 @@ INSTRUCTIONS:
         ),
         "hallucinations": [h for h in hallucinations if h],
         "references": references,
+        "source": "openclaw" if soul_content else "inline",
+        "agent_id": agent_name,
+        "openclaw_model": DEFAULT_MODEL if soul_content else None,
         "stock_data": {
             "current_price": price,
             "high_52w": high_52w,

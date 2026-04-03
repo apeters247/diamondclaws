@@ -46,4 +46,7 @@ class AnalysisResponse(BaseModel):
     confidence_level: float
     hallucinations: List[str]
     references: List[dict]
+    source: Optional[str] = None
+    agent_id: Optional[str] = None
+    openclaw_model: Optional[str] = None
     stock_data: Optional[dict] = None

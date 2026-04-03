@@ -3,6 +3,13 @@ from pathlib import Path
 
 SOULS_DIR = Path(__file__).parent.parent / "souls"
 
+# Maps persona IDs to their OpenClaw agent identifiers
+OPENCLAW_AGENT_MAP = {
+    "bullish_alpha": "diamond-bull",
+    "value_contrarian": "diamond-value",
+    "quant_momentum": "diamond-quant",
+}
+
 
 def load_soul(persona_id: str) -> str | None:
     """Load SOUL.md personality file for a persona. Returns None if not found."""
