@@ -769,6 +769,147 @@
             transition: background-color 0.22s, border-color 0.22s, color 0.18s, box-shadow 0.22s;
         }
 
+        /* ── Architecture Panel ───────────────────────────────────── */
+        .arch-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+        .arch-panel-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .arch-pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+        .arch-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            min-width: 100px;
+            text-align: center;
+        }
+        .arch-node-icon { font-size: 1.3rem; }
+        .arch-node-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        .arch-node-sub {
+            font-size: 0.56rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .arch-node.openclaw-node {
+            background: rgba(109,40,217,0.06);
+            border: 1px solid rgba(109,40,217,0.18);
+        }
+        .arch-node.engine-node {
+            background: rgba(29,78,216,0.06);
+            border: 1px solid rgba(29,78,216,0.18);
+        }
+        .arch-node.mcp-node {
+            background: rgba(34,197,94,0.06);
+            border: 1px solid rgba(34,197,94,0.18);
+        }
+        .arch-node.llm-node {
+            background: rgba(217,119,6,0.06);
+            border: 1px solid rgba(217,119,6,0.18);
+        }
+        .arch-arrow {
+            font-size: 1rem;
+            color: var(--text-muted);
+            padding: 0 0.3rem;
+        }
+        .arch-agents {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .arch-agent-card {
+            padding: 0.5rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+        .arch-agent-name {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.15rem;
+        }
+        .arch-agent-id {
+            font-size: 0.56rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-purple);
+        }
+        .arch-agent-soul {
+            font-size: 0.52rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .arch-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+        .arch-tool-tag {
+            display: inline-block;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.56rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            background: rgba(34,197,94,0.08);
+            color: #16a34a;
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+        .arch-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.8rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.58rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .arch-footer-badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .arch-footer-badge.openclaw-badge {
+            background: rgba(109,40,217,0.08);
+            color: var(--accent-purple);
+            border: 1px solid rgba(109,40,217,0.2);
+        }
+        .arch-footer-badge.mcp-badge {
+            background: rgba(34,197,94,0.08);
+            color: #16a34a;
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+
         /* ── Disclaimer modal ─────────────────────────────────────── */
         .disclaimer-overlay {
             position: fixed; inset: 0; z-index: 9999;
@@ -838,6 +979,71 @@
         <div class="btn-row">
             <button class="analyze-btn" id="analyzeBtn" disabled>Generate Analysis</button>
             <button class="analyze-all-btn" id="analyzeAllBtn" disabled>Fire All 3 Agents</button>
+        </div>
+    </section>
+
+    <!-- ── Architecture / Integration Panel ──────────────────── -->
+    <section class="arch-panel">
+        <div class="arch-panel-title">Powered by OpenClaw Agent Infrastructure</div>
+
+        <div class="arch-pipeline">
+            <div class="arch-node engine-node">
+                <div class="arch-node-icon">&#9670;</div>
+                <div class="arch-node-label">DiamondClaws</div>
+                <div class="arch-node-sub">Web UI + API</div>
+            </div>
+            <div class="arch-arrow">&#8594;</div>
+            <div class="arch-node openclaw-node">
+                <div class="arch-node-icon">&#129438;</div>
+                <div class="arch-node-label">OpenClaw Agents</div>
+                <div class="arch-node-sub">SOUL.md personas</div>
+            </div>
+            <div class="arch-arrow">&#8594;</div>
+            <div class="arch-node mcp-node">
+                <div class="arch-node-icon">&#128268;</div>
+                <div class="arch-node-label">MCP Tool Server</div>
+                <div class="arch-node-sub">5 tools exposed</div>
+            </div>
+            <div class="arch-arrow">&#8594;</div>
+            <div class="arch-node llm-node">
+                <div class="arch-node-icon">&#9889;</div>
+                <div class="arch-node-label">Distortion Engine</div>
+                <div class="arch-node-sub">Gemini 2.0 Flash</div>
+            </div>
+        </div>
+
+        <div class="arch-agents">
+            <div class="arch-agent-card">
+                <div class="arch-agent-name">&#128200; Bullish Alpha</div>
+                <div class="arch-agent-id">diamond-bull</div>
+                <div class="arch-agent-soul">SOUL.md: confirmation + optimism bias</div>
+            </div>
+            <div class="arch-agent-card">
+                <div class="arch-agent-name">&#128142; Value Contrarian</div>
+                <div class="arch-agent-id">diamond-value</div>
+                <div class="arch-agent-soul">SOUL.md: sunk cost + anchoring bias</div>
+            </div>
+            <div class="arch-agent-card">
+                <div class="arch-agent-name">&#9889; Quant Momentum</div>
+                <div class="arch-agent-id">diamond-quant</div>
+                <div class="arch-agent-soul">SOUL.md: overconfidence + clustering bias</div>
+            </div>
+        </div>
+
+        <div class="arch-tools">
+            <span class="arch-tool-tag">analyze_stock()</span>
+            <span class="arch-tool-tag">analyze_all_personas()</span>
+            <span class="arch-tool-tag">list_personas()</span>
+            <span class="arch-tool-tag">get_stock_data()</span>
+            <span class="arch-tool-tag">search_stocks()</span>
+        </div>
+
+        <div class="arch-footer">
+            <div>Same engine, two interfaces: Web UI for humans, MCP tools for AI agents</div>
+            <div style="display: flex; gap: 0.4rem;">
+                <span class="arch-footer-badge openclaw-badge">OpenClaw</span>
+                <span class="arch-footer-badge mcp-badge">MCP Server</span>
+            </div>
         </div>
     </section>
 
