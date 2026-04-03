@@ -218,7 +218,18 @@
         .search-input:focus { outline: none; border-color: var(--accent-blue); }
         .search-input::placeholder { color: var(--text-muted); }
 
-        .quick-stocks { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+        .quick-stocks { display: flex; flex-wrap: wrap; gap: 0.35rem 0.4rem; margin-bottom: 0.75rem; align-items: center; }
+        .quick-sector-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-right: 0.1rem;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+        .quick-sector-label:first-child { margin-left: 0; }
 
         .quick-stock {
             padding: 0.32rem 0.65rem;
@@ -329,8 +340,17 @@
             align-items: center;
         }
 
-        .chart-annotation { font-size: 0.7rem; color: var(--accent-primary); font-style: italic; }
-        #chart { width: 100%; height: 220px; }
+        .chart-annotation { font-size: 0.7rem; color: var(--accent-primary); font-style: italic; font-weight: 400; text-transform: none; letter-spacing: 0; }
+        .yf-link {
+            font-size: 0.7rem; font-weight: 500; text-transform: none; letter-spacing: 0;
+            color: var(--text-muted); text-decoration: none;
+            border: 1px solid var(--border); border-radius: 5px;
+            padding: 0.18rem 0.5rem;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .yf-link:hover { color: var(--accent-primary); border-color: var(--accent-primary); }
+        #chart       { width: 100%; height: 280px; }
+        #chartVolume { width: 100%; height: 65px; margin-top: 1px; }
 
         /* ── Analysis text ────────────────────────────────────────── */
         .analysis-content {
@@ -513,6 +533,52 @@
         .quick-stock, .theme-btn, .search-input, .autocomplete {
             transition: background-color 0.22s, border-color 0.22s, color 0.18s, box-shadow 0.22s;
         }
+
+        /* ── Disclaimer modal ─────────────────────────────────────── */
+        .disclaimer-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.82);
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem;
+        }
+        .disclaimer-overlay.hidden { display: none; }
+        .disclaimer-box {
+            background: #fff; color: #0f172a;
+            border-radius: 12px; max-width: 640px; width: 100%;
+            padding: 2rem 2.25rem; box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+        }
+        .disclaimer-box h2 {
+            font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem;
+            color: #dc2626; letter-spacing: -0.01em;
+        }
+        .disclaimer-box h3 {
+            font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.08em; color: #64748b; margin-bottom: 1rem;
+        }
+        .disclaimer-box p {
+            font-size: 0.82rem; line-height: 1.65; color: #334155;
+            margin-bottom: 0.75rem;
+        }
+        .disclaimer-box p strong { color: #0f172a; }
+        .disclaimer-box .disclaimer-accept {
+            margin-top: 1.25rem; width: 100%;
+            background: #dc2626; color: #fff;
+            border: none; border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.88rem; font-weight: 600; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .disclaimer-box .disclaimer-accept:hover { background: #b91c1c; }
+
+        /* ── Footer disclaimer banner ─────────────────────────────── */
+        .disclaimer-footer {
+            background: #fef2f2; border-top: 1px solid #fecaca;
+            padding: 1.25rem 2rem; margin-top: 3rem;
+            font-size: 0.72rem; line-height: 1.6; color: #7f1d1d;
+            text-align: center;
+        }
+        .disclaimer-footer strong { color: #991b1b; }
+        .disclaimer-footer a { color: #991b1b; }
     </style>
 </head>
 <body>
@@ -595,10 +661,12 @@
 
         <div class="chart-section">
             <div class="chart-title">
-                <span>Price History (2Y)</span>
+                <span>Price History (2Y Weekly)</span>
                 <span class="chart-annotation" id="chartAnnotation"></span>
+                <a class="yf-link" id="yfLink" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Yahoo Finance ↗</a>
             </div>
             <div id="chart"></div>
+            <div id="chartVolume"></div>
         </div>
 
         <div class="analysis-content" id="analysisContent"></div>
@@ -628,6 +696,55 @@
             <div id="referenceItems"></div>
         </div>
     </section>
+</div>
+
+<footer class="disclaimer-footer">
+    <strong>SATIRE &amp; PARODY — NOT FINANCIAL ADVICE.</strong>
+    DiamondClaws is a work of satire and parody created for educational and entertainment purposes only.
+    All analyst personas, investment theses, "channel checks," "proprietary intelligence," and price targets generated by this application are
+    <strong>entirely fictional and intentionally distorted by documented cognitive biases.</strong>
+    Nothing on this site constitutes financial advice, investment advice, trading advice, or any other advice.
+    DiamondClaws is not a registered investment adviser, broker-dealer, or financial planner.
+    No information presented here should be relied upon for making any investment decision.
+    Past performance data shown is historical and <strong>does not guarantee future results.</strong>
+    All AI-generated content is deliberately biased and may contain fabricated statements presented in a realistic style — this is the explicit artistic intent of the platform.
+    By using this site you acknowledge that you are doing so solely for entertainment purposes and that you will not make any financial decisions based on content generated here.
+    &copy; DiamondClaws. All hallucinations reserved.
+</footer>
+
+<!-- First-visit disclaimer modal -->
+<div class="disclaimer-overlay" id="disclaimerOverlay">
+    <div class="disclaimer-box">
+        <h2>⚠ Important Legal Disclaimer</h2>
+        <h3>Satire &amp; Parody — Not Financial Advice</h3>
+        <p>
+            <strong>DiamondClaws is a work of satire.</strong> This application is created for
+            educational and entertainment purposes only. It deliberately generates biased,
+            distorted, and fictitious equity research to illustrate how cognitive biases
+            corrupt financial analysis.
+        </p>
+        <p>
+            <strong>Nothing on this site is financial advice.</strong> All analyst personas,
+            investment theses, price targets, "channel checks," and "proprietary intelligence"
+            are entirely fictional. The AI is explicitly instructed to hallucinate and
+            to present fabricated claims in a realistic institutional tone — that is the point.
+        </p>
+        <p>
+            <strong>Do not make any investment decisions based on content generated here.</strong>
+            DiamondClaws is not affiliated with any financial institution, registered investment
+            adviser, or broker-dealer. No fiduciary relationship is created by your use of this site.
+        </p>
+        <p>
+            Stock data displayed may be delayed, inaccurate, or synthetic.
+            Past performance shown does not predict future results.
+            By continuing, you confirm that you are using this site
+            <strong>solely for entertainment and educational purposes</strong> and that you
+            will not rely on any content generated here for any financial decision.
+        </p>
+        <button class="disclaimer-accept" id="disclaimerAccept">
+            I understand this is satire — I will not make financial decisions based on this content
+        </button>
+    </div>
 </div>
 
 <script>
@@ -743,6 +860,30 @@ function buildThemeSwitcher() {
 }
 
 // ──────────────────────────────────────────
+//  DISCLAIMER MODAL
+// ──────────────────────────────────────────
+(function() {
+    if (!localStorage.getItem('dc_disclaimer_v1')) {
+        document.getElementById('disclaimerOverlay').classList.remove('hidden');
+    } else {
+        document.getElementById('disclaimerOverlay').classList.add('hidden');
+    }
+    document.getElementById('disclaimerAccept').addEventListener('click', function() {
+        localStorage.setItem('dc_disclaimer_v1', '1');
+        document.getElementById('disclaimerOverlay').classList.add('hidden');
+    });
+})();
+
+// ──────────────────────────────────────────
+//  API BASE — works both at / and /diamondclaws/
+// ──────────────────────────────────────────
+const API_BASE = (() => {
+    const p = window.location.pathname;
+    const m = p.match(/^(\/diamondclaws)\/?/);
+    return m ? m[1] : '';
+})();
+
+// ──────────────────────────────────────────
 //  PERSONAS
 // ──────────────────────────────────────────
 const personas = [
@@ -790,11 +931,24 @@ function renderPersonas() {
 
 async function loadPopularStocks() {
     try {
-        const stocks = await (await fetch('/api/stocks/popular')).json();
+        const stocks = await (await fetch(`${API_BASE}/api/stocks/popular`)).json();
         const box = document.getElementById('quickStocks');
-        box.innerHTML = stocks.map(s =>
-            `<span class="quick-stock" data-ticker="${s.ticker}">${s.ticker}</span>`
-        ).join('');
+        // Group by sector and render with labels
+        const groups = {};
+        const order = [];
+        stocks.forEach(s => {
+            const sec = s.sector || 'Stocks';
+            if (!groups[sec]) { groups[sec] = []; order.push(sec); }
+            groups[sec].push(s);
+        });
+        let html = '';
+        order.forEach(sector => {
+            html += `<span class="quick-sector-label">${sector}</span>`;
+            groups[sector].forEach(s => {
+                html += `<span class="quick-stock" data-ticker="${s.ticker}" title="${s.name || s.ticker}">${s.ticker}</span>`;
+            });
+        });
+        box.innerHTML = html;
         box.querySelectorAll('.quick-stock').forEach(el =>
             el.addEventListener('click', () => {
                 document.getElementById('stockSearch').value = el.dataset.ticker;
@@ -811,11 +965,13 @@ function cssVar(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
+let chartVolume = null;
+
 function initChart() {
-    if (chart) { chart.remove(); chart = null; }
-    chart = LightweightCharts.createChart(document.getElementById('chart'), {
-        width: document.getElementById('chart').clientWidth,
-        height: 220,
+    if (chart)       { chart.remove();       chart = null; }
+    if (chartVolume) { chartVolume.remove();  chartVolume = null; }
+
+    const chartOpts = {
         layout: {
             background: { type: 'solid', color: cssVar('--chart-bg') },
             textColor: cssVar('--chart-text'),
@@ -825,27 +981,74 @@ function initChart() {
             horzLines: { color: cssVar('--chart-grid') },
         },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        timeScale:      { borderColor: cssVar('--border') },
-        rightPriceScale:{ borderColor: cssVar('--border') },
+        timeScale:       { borderColor: cssVar('--border'), timeVisible: true },
+        rightPriceScale: { borderColor: cssVar('--border') },
+    };
+
+    chart = LightweightCharts.createChart(document.getElementById('chart'), {
+        ...chartOpts,
+        width: document.getElementById('chart').clientWidth,
+        height: 280,
     });
-    return chart;
+
+    chartVolume = LightweightCharts.createChart(document.getElementById('chartVolume'), {
+        ...chartOpts,
+        width: document.getElementById('chartVolume').clientWidth,
+        height: 65,
+        rightPriceScale: { borderColor: cssVar('--border'), scaleMargins: { top: 0.1, bottom: 0 } },
+        timeScale: { borderColor: cssVar('--border'), visible: false },
+    });
 }
 
 function renderChart(history, personaId) {
     lastHistory = history;
     initChart();
+
     const p = personas.find(x => x.id === personaId);
-    const color = p ? p.color : '#2563eb';
-    const series = chart.addAreaSeries({
-        topColor:   color + '40',
-        bottomColor:color + '06',
-        lineColor:  color,
-        lineWidth: 2,
-        priceLineVisible: false,
-        crosshairMarkerVisible: true, crosshairMarkerRadius: 4,
+    const upColor   = p ? p.color : '#16a34a';
+    const downColor = '#dc2626';
+
+    // Candlestick series
+    const candles = chart.addCandlestickSeries({
+        upColor,
+        downColor,
+        borderUpColor:   upColor,
+        borderDownColor: downColor,
+        wickUpColor:     upColor,
+        wickDownColor:   downColor,
     });
-    series.setData(history.map(h => ({ time: h.date, value: h.close })));
+
+    // Use OHLC if available, fall back to close-only
+    const candleData = history.map(h => ({
+        time:  h.date,
+        open:  h.open  ?? h.close,
+        high:  h.high  ?? h.close,
+        low:   h.low   ?? h.close,
+        close: h.close,
+    }));
+    candles.setData(candleData);
     chart.timeScale().fitContent();
+
+    // Volume histogram
+    const volSeries = chartVolume.addHistogramSeries({
+        priceFormat: { type: 'volume' },
+        priceScaleId: '',
+    });
+    volSeries.setData(history.map(h => ({
+        time:  h.date,
+        value: h.volume || 0,
+        color: (h.close >= (h.open ?? h.close)) ? upColor + 'aa' : downColor + 'aa',
+    })));
+    chartVolume.timeScale().fitContent();
+
+    // Sync crosshair time scales
+    chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
+        if (range) chartVolume.timeScale().setVisibleLogicalRange(range);
+    });
+    chartVolume.timeScale().subscribeVisibleLogicalRangeChange(range => {
+        if (range) chart.timeScale().setVisibleLogicalRange(range);
+    });
+
     document.getElementById('chartAnnotation').textContent = {
         bullish_alpha:   '↑ Strong uptrend — Buy the dip',
         value_contrarian:'↓ Below intrinsic value — Accumulate',
@@ -866,7 +1069,7 @@ searchInput.addEventListener('input', e => {
     if (!q) { autocomplete.classList.remove('visible'); selectedTicker = ''; updateAnalyzeBtn(); return; }
     searchTimeout = setTimeout(async () => {
         try {
-            const results = await (await fetch(`/api/stocks/search?q=${encodeURIComponent(q)}`)).json();
+            const results = await (await fetch(`${API_BASE}/api/stocks/search?q=${encodeURIComponent(q)}`)).json();
             if (!results.length) { autocomplete.classList.remove('visible'); return; }
             autocomplete.innerHTML = results.map(s => `
                 <div class="autocomplete-item" data-ticker="${s.ticker}">
@@ -945,11 +1148,11 @@ document.getElementById('analyzeBtn').addEventListener('click', async () => {
     startLoadingCycle();
     try {
         const [ar, hr] = await Promise.all([
-            fetch('/api/analyze', {
+            fetch(`${API_BASE}/api/analyze`, {
                 method: 'POST', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({ ticker: selectedTicker, persona_id: selectedPersona }),
             }),
-            fetch(`/api/stocks/${selectedTicker}/history`),
+            fetch(`${API_BASE}/api/stocks/${selectedTicker}/history`),
         ]);
         displayAnalysis(await ar.json(), (await hr.json()).history || []);
     } catch(e) { alert('Analysis failed: ' + e.message); }
@@ -993,10 +1196,21 @@ function displayAnalysis(data, history) {
         sd.short_pct_float ? (sd.short_pct_float * 100).toFixed(1) + '%' : '—';
     document.getElementById('metricEarnings').textContent = sd.earnings_date || '—';
 
-    if (history.length) renderChart(history, selectedPersona);
+    const yfLink = document.getElementById('yfLink');
+    yfLink.href = `https://finance.yahoo.com/quote/${data.ticker}`;
+    yfLink.style.display = 'inline';
 
     document.getElementById('analysisContent').innerHTML =
         data.analysis.split('\n\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+
+    // Make section visible BEFORE rendering chart so clientWidth is non-zero
+    document.getElementById('analysisResult').classList.add('visible');
+
+    if (history.length) {
+        // requestAnimationFrame ensures the browser has painted the section visible
+        // so LightweightCharts can read the correct clientWidth
+        requestAnimationFrame(() => renderChart(history, selectedPersona));
+    }
 
     const hEl = document.getElementById('hallucinationItems');
     if (data.hallucinations?.length) {

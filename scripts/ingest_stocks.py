@@ -18,20 +18,20 @@ TICKERS = [
     "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "AMD", "INTC", "CRM",
     "ADBE", "NFLX", "PYPL", "SQ", "PLTR",
     # Finance
-    "JPM", "BAC", "GS", "V", "MA",
+    "JPM", "BAC", "GS", "V", "MA", "BX", "ICE",
     # Healthcare
-    "JNJ", "UNH", "LLY",
+    "JNJ", "UNH", "LLY", "PFE", "ABBV", "REGN", "BMY",
     # Consumer
-    "WMT", "HD", "NKE", "MCD",
+    "WMT", "HD", "NKE", "MCD", "SBUX", "LULU",
     # Energy
-    "XOM", "CVX",
+    "XOM", "CVX", "COP", "MPC", "PSX", "OXY",
     # Industrial
-    "BA", "CAT", "LMT",
+    "BA", "CAT", "LMT", "GE", "MMM",
     # Crypto-adjacent
-    "COIN",
+    "COIN", "RIOT", "MARA",
     # Meme stocks
-    "GME",
-    # Emerging
+    "GME", "AMC",
+    # Emerging/Growth
     "SNOW", "CRWD",
 ]
 

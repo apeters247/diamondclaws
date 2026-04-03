@@ -20,6 +20,7 @@ app = FastAPI(
     description="The Deliberately Biased Stock Analyst",
     version="1.0.0",
     lifespan=lifespan,
+    root_path="",
 )
 
 app.add_middleware(

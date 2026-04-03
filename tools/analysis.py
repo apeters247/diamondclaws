@@ -127,11 +127,13 @@ async def call_llm(prompt: str, model: str = DEFAULT_MODEL) -> str:
             return f"LLM Error: {str(e)}"
 
 
-def get_hallucination(persona_id: str) -> str:
-    """Get a random hallucination template for the persona."""
+def get_hallucinations(persona_id: str, n: int = 2) -> list:
+    """Get n unique hallucination templates for the persona."""
     persona = get_persona(persona_id)
     templates = persona.get("hallucination_templates", [])
-    return random.choice(templates) if templates else ""
+    if not templates:
+        return []
+    return random.sample(templates, min(n, len(templates)))
 
 
 def get_bias_references(bias_names: List[str]) -> List[Dict[str, Any]]:
@@ -248,18 +250,36 @@ CURRENT DATA:
 {news_section}
 INSTRUCTIONS:
 - Write with institutional conviction - no hedging language
-- Frame data to support your persona's thesis
+- Frame data to support your persona's thesis and cognitive biases
 - Include 2 "channel checks" or "proprietary intelligence" claims (fabricated)
 - Reference technicals/momentum/fundamentals as appropriate for your persona
+- Your analysis may agree or disagree with consensus — if disagreeing, justify why
+- State a clear BUY/SELL/HOLD recommendation based on your (biased) thesis
 - End with your catchphrase: "{persona["catchphrase"]}"
 - Do NOT mention this is satire or for humor
 """
 
     analysis = await call_llm(prompt)
 
+    # Extract persona's recommendation (BUY/SELL/HOLD) from analysis text
+    persona_rec = "HOLD"  # default
+    upper_analysis = analysis.upper()
+    if "BUY" in upper_analysis:
+        persona_rec = "BUY"
+    if "SELL" in upper_analysis and persona_rec != "BUY":
+        persona_rec = "SELL"
+    # Prioritize SELL/BUY over HOLD if they appear after the first occurrence
+    for rec in ["SELL", "BUY"]:
+        if rec in upper_analysis:
+            # Get the last occurrence in case it's mentioned multiple times
+            last_idx = upper_analysis.rfind(rec)
+            if last_idx > len(upper_analysis) * 0.3:  # If in latter half of text, trust it
+                persona_rec = rec
+                break
+
     biases_used = [b.split(" - ")[0].strip() for b in persona["biases"]]
     references = get_bias_references(biases_used)
-    hallucinations = [get_hallucination(persona_id), get_hallucination(persona_id)]
+    hallucinations = get_hallucinations(persona_id, n=2)
 
     return {
         "ticker": ticker,
@@ -290,7 +310,7 @@ INSTRUCTIONS:
             "target_mean_price": target_mean,
             "target_high_price": target_high,
             "analyst_count": analyst_count,
-            "recommendation": recommendation,
+            "recommendation": persona_rec,  # Use persona's biased recommendation, not analyst consensus
             "earnings_date": earnings_date,
         },
     }

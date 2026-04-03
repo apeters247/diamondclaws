@@ -152,30 +152,31 @@ def search_stocks(query: str) -> List[Dict[str, Any]]:
 
 
 def get_popular_stocks() -> List[Dict[str, Any]]:
-    popular_tickers = [
-        "NVDA",
-        "AAPL",
-        "MSFT",
-        "GOOGL",
-        "AMZN",
-        "META",
-        "TSLA",
-        "AMD",
-        "JPM",
-        "GME",
-        "COIN",
-        "PLTR",
-        "NFLX",
-        "SQ",
-        "PYPL",
-        "SPY",
-        "QQQ",
+    # Ordered by sector so the UI can group them visually
+    sectored = [
+        ("Tech",       ["NVDA", "AAPL", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "AMD", "INTC", "NFLX", "CRM", "ADBE", "PLTR", "SNOW", "CRWD"]),
+        ("Finance",    ["JPM", "BAC", "GS", "V", "MA", "BX", "ICE"]),
+        ("Healthcare", ["JNJ", "UNH", "LLY", "PFE", "ABBV", "REGN", "BMY"]),
+        ("Consumer",   ["WMT", "MCD", "NKE", "HD", "SBUX", "LULU"]),
+        ("Energy",     ["XOM", "CVX", "COP", "MPC", "PSX", "OXY"]),
+        ("Industrial", ["BA", "CAT", "LMT", "GE", "MMM"]),
+        ("Crypto",     ["COIN", "RIOT", "MARA"]),
+        ("Meme",       ["GME", "AMC"]),
+        ("Fintech",    ["PYPL", "SQ"]),
     ]
+    all_tickers = [t for _, tickers in sectored for t in tickers]
     with get_db() as db:
-        stocks = (
-            db.query(Stock).filter(Stock.ticker.in_(popular_tickers)).limit(20).all()
-        )
-        return [{"ticker": s.ticker, "name": s.name} for s in stocks]
+        stock_map = {
+            s.ticker: s
+            for s in db.query(Stock).filter(Stock.ticker.in_(all_tickers)).all()
+        }
+    result = []
+    for sector, tickers in sectored:
+        for t in tickers:
+            if t in stock_map:
+                s = stock_map[t]
+                result.append({"ticker": s.ticker, "name": s.name, "sector": sector})
+    return result
 
 
 def upsert_stock(data: Dict[str, Any]) -> None:
