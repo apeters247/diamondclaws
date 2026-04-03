@@ -31,7 +31,7 @@ PERSONAS = {
         "biases": [
             "Sunk Cost Fallacy - Justifies holding losers as 'value' while ignoring deteriorating fundamentals",
             "Anchoring - Anchors to historical valuations or book value regardless of relevance",
-            " Gambler's Fallacy - Expects mean reversion after drawdowns",
+            "Gambler's Fallacy - Expects mean reversion after drawdowns",
             "Bandwagon Effect - Contrarian for contrarian's sake regardless of fundamentals",
             "Confirmation Bias - Seeks value indicators while discounting risk factors",
         ],
