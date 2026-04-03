@@ -36,8 +36,10 @@ class AnalysisResponse(BaseModel):
     stock_name: str
     current_price: float
     persona: str
+    persona_id: str
     analysis: str
     biases_used: List[str]
     confidence_level: float
     hallucinations: List[str]
     references: List[dict]
+    stock_data: Optional[dict] = None
