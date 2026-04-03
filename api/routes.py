@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from typing import List
 import asyncio
 import json
@@ -7,6 +7,9 @@ import random
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from models.database import (
     search_stocks,
@@ -30,10 +33,12 @@ CONFIDENCE_RANGES = {
 
 router = APIRouter()
 _executor = ThreadPoolExecutor(max_workers=2)
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/stocks/search")
-async def stocks_search(q: str):
+@limiter.limit("30/minute")
+async def stocks_search(request: Request, q: str):
     """Search stocks by ticker or name."""
     if not q or len(q) < 1:
         return []
@@ -42,13 +47,15 @@ async def stocks_search(q: str):
 
 
 @router.get("/stocks/popular")
-async def stocks_popular():
+@limiter.limit("60/minute")
+async def stocks_popular(request: Request):
     """Get popular/quick-action stocks."""
     return get_popular_stocks()
 
 
 @router.get("/stocks/{ticker}")
-async def get_stock(ticker: str):
+@limiter.limit("60/minute")
+async def get_stock(request: Request, ticker: str):
     """Get stock data by ticker."""
     stock = get_stock_by_ticker(ticker)
     if not stock:
@@ -57,7 +64,8 @@ async def get_stock(ticker: str):
 
 
 @router.get("/stocks/{ticker}/history")
-async def get_stock_history(ticker: str):
+@limiter.limit("60/minute")
+async def get_stock_history(request: Request, ticker: str):
     """Get stock price history for charts."""
     stock = get_stock_by_ticker(ticker)
     if not stock:
@@ -80,19 +88,22 @@ async def get_stock_history(ticker: str):
 
 
 @router.get("/stocks")
-async def list_stocks():
+@limiter.limit("60/minute")
+async def list_stocks(request: Request):
     """List all stocks."""
     return get_all_stocks()
 
 
 @router.get("/personas")
-async def list_personas():
+@limiter.limit("60/minute")
+async def list_personas(request: Request):
     """List all available personas."""
     return get_all_personas()
 
 
 @router.get("/personas/{persona_id}")
-async def get_persona_info(persona_id: str):
+@limiter.limit("60/minute")
+async def get_persona_info(request: Request, persona_id: str):
     """Get a specific persona."""
     persona = get_persona(persona_id)
     if not persona:
@@ -101,9 +112,10 @@ async def get_persona_info(persona_id: str):
 
 
 @router.post("/analyze")
-async def analyze_stock(request: AnalysisRequest):
+@limiter.limit("10/minute")
+async def analyze_stock(request: Request, analysis_req: AnalysisRequest):
     """Generate biased analysis for a stock."""
-    result = await generate_biased_analysis(request.ticker, request.persona_id)
+    result = await generate_biased_analysis(analysis_req.ticker, analysis_req.persona_id)
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
     return result
@@ -142,7 +154,8 @@ async def _run_openclaw_subprocess(ticker: str, persona_id: str) -> dict:
 
 
 @router.post("/analyze/parallel")
-async def analyze_stock_parallel(request: ParallelAnalysisRequest):
+@limiter.limit("5/minute")
+async def analyze_stock_parallel(request: Request, parallel_req: ParallelAnalysisRequest):
     """Fire all 3 personas concurrently, return all analyses in one response.
 
     Default: direct async calls with SOUL.md system prompts (fast, reliable).
@@ -155,9 +168,9 @@ async def analyze_stock_parallel(request: ParallelAnalysisRequest):
     )
 
     if use_subprocess:
-        tasks = [_run_openclaw_subprocess(request.ticker, pid) for pid in persona_ids]
+        tasks = [_run_openclaw_subprocess(parallel_req.ticker, pid) for pid in persona_ids]
     else:
-        tasks = [generate_biased_analysis(request.ticker, pid) for pid in persona_ids]
+        tasks = [generate_biased_analysis(parallel_req.ticker, pid) for pid in persona_ids]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -171,13 +184,14 @@ async def analyze_stock_parallel(request: ParallelAnalysisRequest):
             analyses.append(result)
 
     if not analyses:
-        raise HTTPException(status_code=404, detail=f"Stock {request.ticker} not found")
+        raise HTTPException(status_code=404, detail=f"Stock {parallel_req.ticker} not found")
 
-    return {"ticker": request.ticker.upper(), "analyses": analyses}
+    return {"ticker": parallel_req.ticker.upper(), "analyses": analyses}
 
 
 @router.post("/stocks/{ticker}/refresh")
-async def refresh_stock(ticker: str):
+@limiter.limit("5/minute")
+async def refresh_stock(request: Request, ticker: str):
     """Force-refresh fundamentals and news for a single ticker."""
 
     def _do_refresh():

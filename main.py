@@ -4,9 +4,21 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
+from dotenv import load_dotenv
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+# Load environment variables from .env file (restricted 600 permissions)
+load_dotenv()
 
 from models.database import init_db
 from api import routes
+
+
+def _rate_limit_error_handler(request, exc):
+    return FileResponse("web/index.html", status_code=429)
 
 
 @asynccontextmanager
@@ -15,6 +27,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+
 app = FastAPI(
     title="StonxBuddy API",
     description="The Deliberately Biased Stock Analyst",
@@ -22,6 +36,9 @@ app = FastAPI(
     lifespan=lifespan,
     root_path="",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_error_handler)
 
 app.add_middleware(
     CORSMiddleware,
