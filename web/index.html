@@ -480,6 +480,75 @@
             font-weight: 500;
         }
 
+        /* ── Distortion audit trail ───────────────────────────────── */
+        .distortions-section {
+            margin-top: 1rem;
+            padding: 0.85rem;
+            background: rgba(139,92,246,0.05);
+            border: 1px solid rgba(139,92,246,0.18);
+            border-radius: 8px;
+        }
+        .distortions-title {
+            color: var(--accent-purple);
+            font-size: 0.67rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.6rem;
+        }
+        .distortion-item {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin: 0.5rem 0;
+            padding: 0.5rem 0.65rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-purple);
+        }
+        .distortion-bias {
+            font-weight: 600;
+            color: var(--accent-purple);
+            font-size: 0.72rem;
+        }
+        .distortion-action {
+            color: var(--text-primary);
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+        }
+        .distortion-detail {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-style: italic;
+            margin-top: 0.15rem;
+        }
+        .distortion-cite {
+            color: var(--text-muted);
+            font-size: 0.62rem;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 0.15rem;
+        }
+
+        /* Parallel card distortion (compact) */
+        .parallel-distortions {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(139,92,246,0.05);
+            border: 1px solid rgba(139,92,246,0.15);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .parallel-distortions .distortions-title { font-size: 0.58rem; margin-bottom: 0.35rem; }
+        .parallel-distortion-item {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            margin: 0.3rem 0;
+            padding-left: 0.5rem;
+            border-left: 2px solid var(--accent-purple);
+        }
+        .parallel-distortion-item strong { color: var(--accent-purple); font-size: 0.65rem; }
+        .parallel-distortion-item .cite { color: var(--text-muted); font-size: 0.58rem; }
+
         /* ── References ───────────────────────────────────────────── */
         .references { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 
@@ -858,6 +927,11 @@
         <div class="biases-section">
             <div class="biases-title">Cognitive Biases Active</div>
             <div id="biasTags"></div>
+        </div>
+
+        <div class="distortions-section" id="distortionsSection" style="display:none">
+            <div class="distortions-title">Cognitive Distortion Engine — Audit Trail</div>
+            <div id="distortionItems"></div>
         </div>
 
         <div class="references" id="references">
@@ -1407,6 +1481,22 @@ function displayAnalysis(data, history) {
     document.getElementById('biasTags').innerHTML =
         data.biases_used.map(b => `<span class="bias-tag">${b}</span>`).join('');
 
+    // Distortion audit trail
+    const dSection = document.getElementById('distortionsSection');
+    const dItems = document.getElementById('distortionItems');
+    if (data.distortions_applied?.length) {
+        dItems.innerHTML = data.distortions_applied.map(d => `
+            <div class="distortion-item">
+                <div class="distortion-bias">${d.bias}</div>
+                <div class="distortion-action">${d.action}</div>
+                <div class="distortion-detail">${d.detail}</div>
+                <div class="distortion-cite">${d.citation}</div>
+            </div>`).join('');
+        dSection.style.display = 'block';
+    } else {
+        dSection.style.display = 'none';
+    }
+
     document.getElementById('referenceItems').innerHTML = data.references?.length
         ? data.references.map(r => `
             <div class="reference-item">
@@ -1489,6 +1579,15 @@ function displayParallelResults(data) {
             .map(r => `<span>${r.bias} (${r.year}) <a href="${r.url}" target="_blank">[DOI]</a></span>`)
             .join(' · ');
 
+        const distortionsHtml = (a.distortions_applied || []).length
+            ? `<div class="parallel-distortions">
+                <div class="distortions-title">Distortion Engine Audit</div>
+                ${a.distortions_applied.map(d => `<div class="parallel-distortion-item">
+                    <strong>${d.bias}</strong> ${d.action}
+                    <span class="cite">${d.citation}</span>
+                </div>`).join('')}
+               </div>` : '';
+
         return `<div class="parallel-card" style="--card-accent: ${color}">
             <div class="parallel-card-header">
                 <span class="parallel-persona">${icon} ${a.persona || a.persona_id}</span>
@@ -1497,6 +1596,7 @@ function displayParallelResults(data) {
             ${agentId ? `<div style="margin-bottom:0.6rem"><span class="agent-badge"><span class="agent-dot"></span>${agentId}</span></div>` : ''}
             <div class="parallel-analysis-text">${analysisHtml}</div>
             ${hallucinationsHtml}
+            ${distortionsHtml}
             <div class="parallel-meta">
                 <div class="parallel-confidence">
                     <span>Conviction</span>
