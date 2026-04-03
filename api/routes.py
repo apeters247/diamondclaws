@@ -23,7 +23,15 @@ from data.personas import get_persona, get_all_personas, PERSONAS, OPENCLAW_AGEN
 from tools.analysis import generate_biased_analysis, get_bias_references, get_hallucinations
 from tools.yfinance_fetch import fetch_fundamentals, fetch_news, fetch_price_history
 
+import httpx
+
 ANALYZE_SCRIPT = Path.home() / ".openclaw" / "workspace" / "skills" / "diamond-analysis" / "scripts" / "analyze.py"
+
+# When set, analysis endpoints proxy to a remote OpenClaw instance
+# (e.g., developer's desktop exposed via Tailscale Funnel).
+# The deploy server handles static files and stock data locally,
+# but all LLM analysis routes through the remote OpenClaw machine.
+OPENCLAW_REMOTE_URL = os.getenv("OPENCLAW_REMOTE_URL", "")
 
 CONFIDENCE_RANGES = {
     "bullish_alpha": (0.93, 0.99),
@@ -115,6 +123,14 @@ async def get_persona_info(request: Request, persona_id: str):
 @limiter.limit("10/minute")
 async def analyze_stock(request: Request, analysis_req: AnalysisRequest):
     """Generate biased analysis for a stock."""
+    if OPENCLAW_REMOTE_URL:
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            resp = await client.post(
+                f"{OPENCLAW_REMOTE_URL}/api/analyze",
+                json={"ticker": analysis_req.ticker, "persona_id": analysis_req.persona_id},
+            )
+            resp.raise_for_status()
+            return resp.json()
     result = await generate_biased_analysis(analysis_req.ticker, analysis_req.persona_id)
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
@@ -158,9 +174,21 @@ async def _run_openclaw_subprocess(ticker: str, persona_id: str) -> dict:
 async def analyze_stock_parallel(request: Request, parallel_req: ParallelAnalysisRequest):
     """Fire all 3 personas concurrently, return all analyses in one response.
 
-    Default: direct async calls with SOUL.md system prompts (fast, reliable).
-    Set OPENCLAW_SUBPROCESS=1 to route through analyze.py subprocesses instead.
+    Routing priority:
+    1. OPENCLAW_REMOTE_URL set → proxy to remote OpenClaw machine
+    2. OPENCLAW_SUBPROCESS=1  → local analyze.py subprocesses
+    3. Default               → direct async LLM calls with SOUL.md
     """
+    # Remote proxy: forward to OpenClaw machine (e.g., via Tailscale Funnel)
+    if OPENCLAW_REMOTE_URL:
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            resp = await client.post(
+                f"{OPENCLAW_REMOTE_URL}/api/analyze/parallel",
+                json={"ticker": parallel_req.ticker},
+            )
+            resp.raise_for_status()
+            return resp.json()
+
     persona_ids = list(PERSONAS.keys())
     use_subprocess = (
         os.getenv("OPENCLAW_SUBPROCESS") == "1"
