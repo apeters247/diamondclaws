@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiamondClaws — Institutional Grade Biased Analysis</title>
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Default (Light / Professional) ─────────────────────── */
+        :root {
+            --bg-page:        #f5f7fa;
+            --bg-card:        #ffffff;
+            --bg-surface:     #eef1f6;
+            --accent-primary: #1d4ed8;
+            --accent-dark:    #1e3a8a;
+            --accent-blue:    #1d4ed8;
+            --accent-purple:  #6d28d9;
+            --accent-red:     #dc2626;
+            --text-primary:   #0f172a;
+            --text-secondary: #475569;
+            --text-muted:     #94a3b8;
+            --border:         #e2e8f0;
+            --radius:         12px;
+            --card-shadow:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+            --btn-glow:       rgba(29,78,216,0.22);
+            --chart-bg:       #f5f7fa;
+            --chart-grid:     #dde3ed;
+            --chart-text:     #94a3b8;
+            --title1:         #1d4ed8;
+            --title2:         #6d28d9;
+            --quote-bg:       #eef1f6;
+            --grad1:          rgba(29,78,216,0.05);
+            --grad2:          rgba(109,40,217,0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 20% 0%, var(--grad1) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 100%, var(--grad2) 0%, transparent 55%);
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+        /* ── Header ───────────────────────────────────────────────── */
+        header {
+            text-align: center;
+            margin-bottom: 2.25rem;
+            position: relative;
+            padding-top: 0.25rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.4rem;
+        }
+
+        h1 .claws  { color: var(--title1); }
+        h1 .diamond { color: var(--title2); }
+
+        .subtitle { color: var(--text-muted); font-size: 0.88rem; letter-spacing: 0.02em; }
+
+        /* ── Theme Switcher ───────────────────────────────────────── */
+        .theme-switcher {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+        }
+
+        .theme-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            cursor: pointer;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.15s, background 0.15s, transform 0.12s, box-shadow 0.15s;
+            color: var(--text-secondary);
+            box-shadow: var(--card-shadow);
+            user-select: none;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+
+        .theme-btn.active {
+            border-color: var(--accent-blue);
+            background: var(--accent-blue);
+            color: white;
+            box-shadow: 0 2px 8px var(--btn-glow);
+        }
+
+        /* ── Section label ────────────────────────────────────────── */
+        .section-label {
+            color: var(--text-muted);
+            font-size: 0.67rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ── Persona grid ─────────────────────────────────────────── */
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 800px) { .persona-grid { grid-template-columns: 1fr; } }
+
+        .persona-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: background 0.18s, border-color 0.18s, transform 0.15s, box-shadow 0.18s;
+            position: relative;
+            box-shadow: var(--card-shadow);
+        }
+
+        .persona-card:hover {
+            background: var(--bg-surface);
+            border-color: var(--card-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+
+        .persona-card.selected {
+            border-color: var(--card-color);
+            box-shadow: 0 0 0 1px var(--card-color), var(--card-shadow);
+        }
+
+        .persona-card.selected::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-color);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .persona-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+
+        .persona-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            background: var(--card-color);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+        }
+
+        .persona-name { font-weight: 600; font-size: 0.95rem; }
+
+        .persona-desc {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+
+        .persona-catchphrase {
+            padding: 0.5rem 0.75rem;
+            background: var(--quote-bg);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+            border-left: 2px solid var(--card-color);
+        }
+
+        /* ── Search section ───────────────────────────────────────── */
+        .search-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .search-wrapper { position: relative; margin-bottom: 0.75rem; }
+
+        .search-input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            transition: border-color 0.15s;
+        }
+
+        .search-input:focus { outline: none; border-color: var(--accent-blue); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        .quick-stocks { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+
+        .quick-stock {
+            padding: 0.32rem 0.65rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: background 0.12s, border-color 0.12s, color 0.12s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .quick-stock:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 0.85rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-dark));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        .analyze-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--btn-glow);
+        }
+
+        .analyze-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* ── Analysis result panel ────────────────────────────────── */
+        .analysis-result {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            display: none;
+            box-shadow: var(--card-shadow);
+        }
+
+        .analysis-result.visible { display: block; animation: slideIn 0.35s ease; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stock-info { display: flex; align-items: baseline; gap: 0.6rem; }
+
+        .stock-ticker {
+            font-size: 1.4rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-blue);
+        }
+
+        .stock-name { color: var(--text-muted); font-size: 0.9rem; }
+
+        .persona-badge {
+            padding: 0.3rem 0.65rem;
+            background: var(--bg-surface);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        /* ── Chart ────────────────────────────────────────────────── */
+        .chart-section {
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .chart-title {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-annotation { font-size: 0.7rem; color: var(--accent-primary); font-style: italic; }
+        #chart { width: 100%; height: 220px; }
+
+        /* ── Analysis text ────────────────────────────────────────── */
+        .analysis-content {
+            font-size: 0.94rem;
+            line-height: 1.75;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        .analysis-content p { margin-bottom: 0.75rem; }
+
+        /* ── Hallucinations ───────────────────────────────────────── */
+        .hallucinations {
+            margin: 1rem 0;
+            padding: 0.85rem;
+            background: rgba(217, 119, 6, 0.06);
+            border: 1px solid rgba(217, 119, 6, 0.2);
+            border-radius: 8px;
+        }
+
+        .hallucinations-title {
+            color: #b45309;
+            font-size: 0.67rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+        }
+
+        .hallucination-item {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            margin: 0.4rem 0;
+            padding-left: 0.65rem;
+            border-left: 2px solid rgba(180, 83, 9, 0.4);
+        }
+
+        /* ── Metrics rows ─────────────────────────────────────────── */
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.6rem;
+        }
+
+        #analystMetricsRow { grid-template-columns: repeat(5, 1fr); }
+
+        @media (max-width: 700px) {
+            .metrics-row          { grid-template-columns: repeat(2, 1fr); }
+            #analystMetricsRow    { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .metric-box {
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 0.5rem;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 0.2rem;
+        }
+
+        /* ── Conviction bar ───────────────────────────────────────── */
+        .confidence-section {
+            margin-top: 1rem;
+            padding: 0.85rem;
+            background: var(--bg-page);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .confidence-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .confidence-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        .confidence-bar { height: 5px; background: var(--bg-surface); border-radius: 3px; overflow: hidden; }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple));
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* ── Biases ───────────────────────────────────────────────── */
+        .biases-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+        .biases-title {
+            color: var(--text-muted);
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            margin-bottom: 0.5rem;
+        }
+
+        .bias-tag {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.68rem;
+            margin: 0.15rem;
+            color: var(--accent-purple);
+            font-weight: 500;
+        }
+
+        /* ── References ───────────────────────────────────────────── */
+        .references { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+
+        .reference-item { font-size: 0.7rem; color: var(--text-muted); margin: 0.35rem 0; line-height: 1.5; }
+        .reference-item a { color: var(--accent-blue); text-decoration: none; }
+        .reference-item a:hover { text-decoration: underline; }
+
+        /* ── Loading ──────────────────────────────────────────────── */
+        .loading { display: none; text-align: center; padding: 2.5rem; }
+        .loading.visible { display: block; }
+
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 0.75rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: var(--text-muted); font-size: 0.85rem; transition: opacity 0.2s ease; }
+
+        /* ── Autocomplete ─────────────────────────────────────────── */
+        .autocomplete {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border); border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 240px; overflow-y: auto;
+            z-index: 100; display: none;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+
+        .autocomplete.visible { display: block; }
+
+        .autocomplete-item {
+            padding: 0.6rem 0.85rem; cursor: pointer;
+            transition: background 0.12s;
+            display: flex; justify-content: space-between;
+        }
+
+        .autocomplete-item:hover { background: var(--bg-surface); }
+
+        .autocomplete-ticker { font-family: 'JetBrains Mono', monospace; font-weight: 500; color: var(--accent-blue); }
+        .autocomplete-name   { color: var(--text-muted); font-size: 0.8rem; }
+
+        /* ── Theme transition ─────────────────────────────────────── */
+        body, .persona-card, .search-section, .analysis-result,
+        .metric-box, .confidence-section, .chart-section,
+        .quick-stock, .theme-btn, .search-input, .autocomplete {
+            transition: background-color 0.22s, border-color 0.22s, color 0.18s, box-shadow 0.22s;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="theme-switcher" id="themeSwitcher"></div>
+        <h1><span class="diamond">♦</span> <span class="claws">DiamondClaws</span></h1>
+        <p class="subtitle">Institutional Grade Biased Equity Analysis</p>
+    </header>
+
+    <div class="section-label">Select Analyst Persona</div>
+    <section class="persona-grid" id="personaGrid"></section>
+
+    <section class="search-section">
+        <div class="section-label">Underlying Asset</div>
+        <div class="search-wrapper">
+            <input type="text" class="search-input" id="stockSearch"
+                   placeholder="Search ticker or company name…" autocomplete="off">
+            <div class="autocomplete" id="autocomplete"></div>
+        </div>
+        <div class="quick-stocks" id="quickStocks"></div>
+        <button class="analyze-btn" id="analyzeBtn" disabled>Generate Analysis</button>
+    </section>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text" id="loadingText">Triangulating alpha vectors…</p>
+    </div>
+
+    <section class="analysis-result" id="analysisResult">
+        <div class="result-header">
+            <div class="stock-info">
+                <span class="stock-ticker" id="resultTicker">NVDA</span>
+                <span class="stock-name"   id="resultName">NVIDIA Corporation</span>
+            </div>
+            <span class="persona-badge" id="personaBadge">Bullish Alpha</span>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metric-box">
+                <div class="metric-value" id="metricPrice">$0</div>
+                <div class="metric-label">Price</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="metricPE">—</div>
+                <div class="metric-label">P/E (TTM)</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="metricChange">0%</div>
+                <div class="metric-label">From 52W Low</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="metricMcap">$0B</div>
+                <div class="metric-label">Market Cap</div>
+            </div>
+        </div>
+
+        <div class="metrics-row" id="analystMetricsRow">
+            <div class="metric-box">
+                <div class="metric-value" id="metricForwardPE">—</div>
+                <div class="metric-label">Forward P/E</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="metricConsensus">—</div>
+                <div class="metric-label">Consensus</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="metricTarget">—</div>
+                <div class="metric-label">Analyst Target</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="metricShort">—</div>
+                <div class="metric-label">Short Interest</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-value" id="metricEarnings">—</div>
+                <div class="metric-label">Next Earnings</div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">
+                <span>Price History (2Y)</span>
+                <span class="chart-annotation" id="chartAnnotation"></span>
+            </div>
+            <div id="chart"></div>
+        </div>
+
+        <div class="analysis-content" id="analysisContent"></div>
+
+        <div class="hallucinations" id="hallucinations">
+            <div class="hallucinations-title">⚠ Channel Intelligence</div>
+            <div id="hallucinationItems"></div>
+        </div>
+
+        <div class="confidence-section">
+            <div class="confidence-header">
+                <span>Conviction Level</span>
+                <span class="confidence-value" id="confidenceValue">95%</span>
+            </div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceFill" style="width: 95%"></div>
+            </div>
+        </div>
+
+        <div class="biases-section">
+            <div class="biases-title">Cognitive Biases Active</div>
+            <div id="biasTags"></div>
+        </div>
+
+        <div class="references" id="references">
+            <div class="biases-title">Academic Foundation</div>
+            <div id="referenceItems"></div>
+        </div>
+    </section>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+//  THEME SYSTEM
+// ──────────────────────────────────────────
+const THEMES = {
+    default: {
+        name: 'Default', icon: '☀', title: 'Light — Professional',
+        vars: {
+            '--bg-page':'#f5f7fa', '--bg-card':'#ffffff', '--bg-surface':'#eef1f6',
+            '--accent-primary':'#1d4ed8', '--accent-dark':'#1e3a8a',
+            '--accent-blue':'#1d4ed8', '--accent-purple':'#6d28d9', '--accent-red':'#dc2626',
+            '--text-primary':'#0f172a', '--text-secondary':'#475569', '--text-muted':'#94a3b8',
+            '--border':'#e2e8f0',
+            '--card-shadow':'0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05)',
+            '--btn-glow':'rgba(29,78,216,0.22)',
+            '--chart-bg':'#f5f7fa', '--chart-grid':'#dde3ed', '--chart-text':'#94a3b8',
+            '--title1':'#1d4ed8', '--title2':'#6d28d9',
+            '--quote-bg':'#eef1f6',
+            '--grad1':'rgba(29,78,216,0.05)', '--grad2':'rgba(109,40,217,0.04)',
+        },
+    },
+    dark: {
+        name: 'Dark', icon: '☾', title: 'Dark',
+        vars: {
+            '--bg-page':'#08090d', '--bg-card':'#0e1117', '--bg-surface':'#161b22',
+            '--accent-primary':'#00c084', '--accent-dark':'#00a06a',
+            '--accent-blue':'#3b82f6', '--accent-purple':'#8b5cf6', '--accent-red':'#f43f5e',
+            '--text-primary':'#e6edf3', '--text-secondary':'#8b949e', '--text-muted':'#484f58',
+            '--border':'#21262d',
+            '--card-shadow':'0 1px 3px rgba(0,0,0,0.5)',
+            '--btn-glow':'rgba(0,192,132,0.28)',
+            '--chart-bg':'#08090d', '--chart-grid':'#161b22', '--chart-text':'#484f58',
+            '--title1':'#00c084', '--title2':'#60a5fa',
+            '--quote-bg':'rgba(255,255,255,0.03)',
+            '--grad1':'rgba(0,192,132,0.07)', '--grad2':'rgba(139,92,246,0.06)',
+        },
+    },
+    nasa: {
+        name: 'NASA', icon: '🚀', title: 'NASA',
+        vars: {
+            '--bg-page':'#060b18', '--bg-card':'#0b1428', '--bg-surface':'#101e35',
+            '--accent-primary':'#fc3d21', '--accent-dark':'#c52e14',
+            '--accent-blue':'#4da8ff', '--accent-purple':'#b06aff', '--accent-red':'#fc3d21',
+            '--text-primary':'#ddeeff', '--text-secondary':'#7a9cc4', '--text-muted':'#344d68',
+            '--border':'#132030',
+            '--card-shadow':'0 1px 4px rgba(0,0,0,0.65)',
+            '--btn-glow':'rgba(252,61,33,0.35)',
+            '--chart-bg':'#060b18', '--chart-grid':'#101e35', '--chart-text':'#344d68',
+            '--title1':'#fc3d21', '--title2':'#4da8ff',
+            '--quote-bg':'rgba(77,168,255,0.07)',
+            '--grad1':'rgba(252,61,33,0.08)', '--grad2':'rgba(77,168,255,0.07)',
+        },
+    },
+    oceans: {
+        name: 'Oceans', icon: '🌊', title: 'Oceans',
+        vars: {
+            '--bg-page':'#020c1e', '--bg-card':'#051828', '--bg-surface':'#082438',
+            '--accent-primary':'#00d4c8', '--accent-dark':'#00a89e',
+            '--accent-blue':'#00aaff', '--accent-purple':'#3366ff', '--accent-red':'#ff4060',
+            '--text-primary':'#b8d8f5', '--text-secondary':'#4e84a8', '--text-muted':'#1d4060',
+            '--border':'#0b2840',
+            '--card-shadow':'0 1px 4px rgba(0,0,0,0.55)',
+            '--btn-glow':'rgba(0,212,200,0.32)',
+            '--chart-bg':'#020c1e', '--chart-grid':'#082438', '--chart-text':'#1d4060',
+            '--title1':'#00d4c8', '--title2':'#00aaff',
+            '--quote-bg':'rgba(0,212,200,0.06)',
+            '--grad1':'rgba(0,212,200,0.09)', '--grad2':'rgba(0,170,255,0.07)',
+        },
+    },
+    autumn: {
+        name: 'Autumn', icon: '🍂', title: 'Autumn',
+        vars: {
+            '--bg-page':'#fdf6ed', '--bg-card':'#fffaf3', '--bg-surface':'#fdf0da',
+            '--accent-primary':'#b94f0c', '--accent-dark':'#903c08',
+            '--accent-blue':'#a0580a', '--accent-purple':'#7b3f1e', '--accent-red':'#991b1b',
+            '--text-primary':'#1c0e00', '--text-secondary':'#6b3a1f', '--text-muted':'#a07850',
+            '--border':'#f0d5b0',
+            '--card-shadow':'0 1px 3px rgba(100,50,10,0.09)',
+            '--btn-glow':'rgba(185,79,12,0.22)',
+            '--chart-bg':'#fdf6ed', '--chart-grid':'#fdf0da', '--chart-text':'#a07850',
+            '--title1':'#b94f0c', '--title2':'#a0580a',
+            '--quote-bg':'#fdf0da',
+            '--grad1':'rgba(185,79,12,0.07)', '--grad2':'rgba(160,88,10,0.05)',
+        },
+    },
+};
+
+let currentTheme = localStorage.getItem('dc-theme') || 'default';
+
+function applyTheme(id) {
+    const theme = THEMES[id];
+    if (!theme) return;
+    const root = document.documentElement;
+    for (const [k, v] of Object.entries(theme.vars)) root.style.setProperty(k, v);
+    currentTheme = id;
+    localStorage.setItem('dc-theme', id);
+    document.querySelectorAll('.theme-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.theme === id));
+    // Re-draw chart in new colors if visible
+    if (chart && lastHistory) renderChart(lastHistory, selectedPersona);
+}
+
+function buildThemeSwitcher() {
+    const sw = document.getElementById('themeSwitcher');
+    sw.innerHTML = Object.entries(THEMES).map(([id, t]) => `
+        <button class="theme-btn${id === currentTheme ? ' active' : ''}"
+                data-theme="${id}" title="${t.title}">${t.icon}</button>
+    `).join('');
+    sw.querySelectorAll('.theme-btn').forEach(b =>
+        b.addEventListener('click', () => applyTheme(b.dataset.theme)));
+}
+
+// ──────────────────────────────────────────
+//  PERSONAS
+// ──────────────────────────────────────────
+const personas = [
+    {
+        id: 'bullish_alpha', name: 'Bullish Alpha', icon: '📈',
+        desc: 'Aggressive growth thesis. Frames everything as asymmetric opportunity with explosive upside.',
+        catchphrase: 'This represents a generational opportunity.',
+        color: '#16a34a',
+    },
+    {
+        id: 'value_contrarian', name: 'Value Contrarian', icon: '💎',
+        desc: 'Deep value investor. Sees value where others see risk with deep conviction in mean reversion.',
+        catchphrase: 'The market is pricing this as zero-probability.',
+        color: '#2563eb',
+    },
+    {
+        id: 'quant_momentum', name: 'Quant Momentum', icon: '⚡',
+        desc: 'Quantitative researcher obsessed with momentum signals and technical patterns.',
+        catchphrase: 'The momentum factor is extremely strong.',
+        color: '#7c3aed',
+    },
+];
+
+let selectedPersona = 'bullish_alpha';
+let selectedTicker  = '';
+let chart           = null;
+let lastHistory     = null;
+
+function renderPersonas() {
+    const grid = document.getElementById('personaGrid');
+    grid.innerHTML = personas.map(p => `
+        <div class="persona-card${p.id === selectedPersona ? ' selected' : ''}"
+             data-id="${p.id}" style="--card-color:${p.color}">
+            <div class="persona-header">
+                <div class="persona-icon">${p.icon}</div>
+                <div class="persona-name">${p.name}</div>
+            </div>
+            <div class="persona-desc">${p.desc}</div>
+            <div class="persona-catchphrase">"${p.catchphrase}"</div>
+        </div>
+    `).join('');
+    document.querySelectorAll('.persona-card').forEach(c =>
+        c.addEventListener('click', () => { selectedPersona = c.dataset.id; renderPersonas(); }));
+}
+
+async function loadPopularStocks() {
+    try {
+        const stocks = await (await fetch('/api/stocks/popular')).json();
+        const box = document.getElementById('quickStocks');
+        box.innerHTML = stocks.map(s =>
+            `<span class="quick-stock" data-ticker="${s.ticker}">${s.ticker}</span>`
+        ).join('');
+        box.querySelectorAll('.quick-stock').forEach(el =>
+            el.addEventListener('click', () => {
+                document.getElementById('stockSearch').value = el.dataset.ticker;
+                selectedTicker = el.dataset.ticker;
+                updateAnalyzeBtn();
+            }));
+    } catch (e) { console.error(e); }
+}
+
+// ──────────────────────────────────────────
+//  CHART
+// ──────────────────────────────────────────
+function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function initChart() {
+    if (chart) { chart.remove(); chart = null; }
+    chart = LightweightCharts.createChart(document.getElementById('chart'), {
+        width: document.getElementById('chart').clientWidth,
+        height: 220,
+        layout: {
+            background: { type: 'solid', color: cssVar('--chart-bg') },
+            textColor: cssVar('--chart-text'),
+        },
+        grid: {
+            vertLines: { color: cssVar('--chart-grid') },
+            horzLines: { color: cssVar('--chart-grid') },
+        },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        timeScale:      { borderColor: cssVar('--border') },
+        rightPriceScale:{ borderColor: cssVar('--border') },
+    });
+    return chart;
+}
+
+function renderChart(history, personaId) {
+    lastHistory = history;
+    initChart();
+    const p = personas.find(x => x.id === personaId);
+    const color = p ? p.color : '#2563eb';
+    const series = chart.addAreaSeries({
+        topColor:   color + '40',
+        bottomColor:color + '06',
+        lineColor:  color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        crosshairMarkerVisible: true, crosshairMarkerRadius: 4,
+    });
+    series.setData(history.map(h => ({ time: h.date, value: h.close })));
+    chart.timeScale().fitContent();
+    document.getElementById('chartAnnotation').textContent = {
+        bullish_alpha:   '↑ Strong uptrend — Buy the dip',
+        value_contrarian:'↓ Below intrinsic value — Accumulate',
+        quant_momentum:  '→ Momentum building — Confirm breakout',
+    }[personaId] || '';
+}
+
+// ──────────────────────────────────────────
+//  SEARCH / AUTOCOMPLETE
+// ──────────────────────────────────────────
+let searchTimeout;
+const searchInput  = document.getElementById('stockSearch');
+const autocomplete = document.getElementById('autocomplete');
+
+searchInput.addEventListener('input', e => {
+    clearTimeout(searchTimeout);
+    const q = e.target.value.trim();
+    if (!q) { autocomplete.classList.remove('visible'); selectedTicker = ''; updateAnalyzeBtn(); return; }
+    searchTimeout = setTimeout(async () => {
+        try {
+            const results = await (await fetch(`/api/stocks/search?q=${encodeURIComponent(q)}`)).json();
+            if (!results.length) { autocomplete.classList.remove('visible'); return; }
+            autocomplete.innerHTML = results.map(s => `
+                <div class="autocomplete-item" data-ticker="${s.ticker}">
+                    <span class="autocomplete-ticker">${s.ticker}</span>
+                    <span class="autocomplete-name">${s.name}</span>
+                </div>`).join('');
+            autocomplete.querySelectorAll('.autocomplete-item').forEach(item =>
+                item.addEventListener('click', () => {
+                    searchInput.value = item.dataset.ticker;
+                    selectedTicker = item.dataset.ticker;
+                    autocomplete.classList.remove('visible');
+                    updateAnalyzeBtn();
+                }));
+            autocomplete.classList.add('visible');
+        } catch(e) { console.error(e); }
+    }, 180);
+});
+
+searchInput.addEventListener('blur', () =>
+    setTimeout(() => autocomplete.classList.remove('visible'), 150));
+
+function updateAnalyzeBtn() {
+    document.getElementById('analyzeBtn').disabled = !selectedTicker;
+}
+
+// ──────────────────────────────────────────
+//  ANALYSIS
+// ──────────────────────────────────────────
+const LOADING_LINES = [
+    "Triangulating alpha vectors…",
+    "Calibrating proprietary sentiment models…",
+    "Cross-referencing dark pool flow data…",
+    "Stress-testing bull/bear scenario matrices…",
+    "Ingesting sell-side consensus revisions…",
+    "Normalizing EBITDA across comparable cohorts…",
+    "Running Monte Carlo on free cash flow projections…",
+    "Adjusting for macro regime regime shifts…",
+    "Backtesting momentum factor exposures…",
+    "Synthesizing channel checks with field intelligence…",
+    "Decomposing idiosyncratic risk from beta…",
+    "Querying institutional positioning data…",
+    "Aligning earnings revision breadth signals…",
+    "Extrapolating TAM expansion runway…",
+    "Optimizing risk-adjusted return attribution…",
+    "Overlaying technical confluence with fundamentals…",
+    "Consulting proprietary scuttlebutt network…",
+    "Recalibrating convexity assumptions…",
+    "Weighting management credibility scorecard…",
+    "Validating thesis against leading indicators…",
+];
+let _loadingInterval = null;
+
+function startLoadingCycle() {
+    const el = document.getElementById('loadingText');
+    let idx = Math.floor(Math.random() * LOADING_LINES.length);
+    el.textContent = LOADING_LINES[idx];
+    _loadingInterval = setInterval(() => {
+        idx = (idx + 1) % LOADING_LINES.length;
+        el.style.opacity = '0';
+        setTimeout(() => {
+            el.textContent = LOADING_LINES[idx];
+            el.style.opacity = '1';
+        }, 200);
+    }, 1800);
+}
+
+function stopLoadingCycle() {
+    clearInterval(_loadingInterval);
+    _loadingInterval = null;
+}
+
+document.getElementById('analyzeBtn').addEventListener('click', async () => {
+    if (!selectedTicker) return;
+    document.getElementById('loading').classList.add('visible');
+    document.getElementById('analysisResult').classList.remove('visible');
+    startLoadingCycle();
+    try {
+        const [ar, hr] = await Promise.all([
+            fetch('/api/analyze', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ ticker: selectedTicker, persona_id: selectedPersona }),
+            }),
+            fetch(`/api/stocks/${selectedTicker}/history`),
+        ]);
+        displayAnalysis(await ar.json(), (await hr.json()).history || []);
+    } catch(e) { alert('Analysis failed: ' + e.message); }
+    finally { stopLoadingCycle(); document.getElementById('loading').classList.remove('visible'); }
+});
+
+function fmt(n) {
+    if (!n && n !== 0) return '—';
+    if (n >= 1e12) return (n/1e12).toFixed(1) + 'T';
+    if (n >= 1e9)  return (n/1e9).toFixed(1) + 'B';
+    if (n >= 1e6)  return (n/1e6).toFixed(1) + 'M';
+    return n.toString();
+}
+
+function displayAnalysis(data, history) {
+    document.getElementById('resultTicker').textContent = data.ticker;
+    document.getElementById('resultName').textContent   = data.stock_name;
+    document.getElementById('personaBadge').textContent = data.persona;
+
+    const sd = data.stock_data;
+    const price = sd.current_price, low = sd.low_52w;
+    document.getElementById('metricPrice').textContent  = '$' + price.toFixed(2);
+    document.getElementById('metricPE').textContent     = sd.pe_ratio && sd.pe_ratio > 0
+        ? sd.pe_ratio.toFixed(1) : '—';
+    document.getElementById('metricChange').textContent = low
+        ? '+' + ((price - low) / low * 100).toFixed(1) + '%' : '—';
+    document.getElementById('metricMcap').textContent   = '$' + fmt(sd.market_cap);
+
+    document.getElementById('metricForwardPE').textContent =
+        sd.forward_pe && sd.forward_pe > 0 ? sd.forward_pe.toFixed(1) : '—';
+
+    const recEl = document.getElementById('metricConsensus');
+    const rec   = (sd.recommendation || 'HOLD').toUpperCase();
+    recEl.textContent = rec;
+    recEl.style.color = rec.includes('BUY') ? '#16a34a'
+                      : rec.includes('SELL') || rec === 'UNDERPERFORM' ? '#dc2626' : '';
+
+    document.getElementById('metricTarget').textContent =
+        sd.target_mean_price ? '$' + sd.target_mean_price.toFixed(2) : '—';
+    document.getElementById('metricShort').textContent =
+        sd.short_pct_float ? (sd.short_pct_float * 100).toFixed(1) + '%' : '—';
+    document.getElementById('metricEarnings').textContent = sd.earnings_date || '—';
+
+    if (history.length) renderChart(history, selectedPersona);
+
+    document.getElementById('analysisContent').innerHTML =
+        data.analysis.split('\n\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+
+    const hEl = document.getElementById('hallucinationItems');
+    if (data.hallucinations?.length) {
+        hEl.innerHTML = data.hallucinations.map(h => `<div class="hallucination-item">${h}</div>`).join('');
+        document.getElementById('hallucinations').style.display = 'block';
+    } else {
+        document.getElementById('hallucinations').style.display = 'none';
+    }
+
+    const conf = Math.round(data.confidence_level * 100);
+    document.getElementById('confidenceValue').textContent = conf + '%';
+    document.getElementById('confidenceFill').style.width  = conf + '%';
+
+    document.getElementById('biasTags').innerHTML =
+        data.biases_used.map(b => `<span class="bias-tag">${b}</span>`).join('');
+
+    document.getElementById('referenceItems').innerHTML = data.references?.length
+        ? data.references.map(r => `
+            <div class="reference-item">
+                <strong>${r.bias}</strong> (${r.year}): ${r.paper}. <em>${r.journal}</em>.
+                <a href="${r.url}" target="_blank">[DOI]</a>
+            </div>`).join('')
+        : '<div class="reference-item">No references available</div>';
+
+    document.getElementById('analysisResult').classList.add('visible');
+}
+
+// ──────────────────────────────────────────
+//  INIT
+// ──────────────────────────────────────────
+buildThemeSwitcher();
+applyTheme(currentTheme);
+renderPersonas();
+loadPopularStocks();
+
+window.addEventListener('resize', () => {
+    if (chart) chart.resize(document.getElementById('chart').clientWidth, 220);
+});
+</script>
+</body>
+</html>

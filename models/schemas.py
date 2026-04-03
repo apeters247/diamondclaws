@@ -1,0 +1,43 @@
+from pydantic import BaseModel
+from typing import List, Optional
+
+
+class StockInfo(BaseModel):
+    ticker: str
+    name: str
+    sector: str
+    current_price: float
+    market_cap: Optional[float] = None
+    pe_ratio: Optional[float] = None
+    dividend_yield: Optional[float] = None
+    volume: Optional[int] = None
+    high_52w: Optional[float] = None
+    low_52w: Optional[float] = None
+    description: Optional[str] = None
+
+
+class Persona(BaseModel):
+    id: str
+    name: str
+    description: str
+    biases: List[str]
+    style: str
+    catchphrase: str
+    avatar_color: str
+
+
+class AnalysisRequest(BaseModel):
+    ticker: str
+    persona_id: str
+
+
+class AnalysisResponse(BaseModel):
+    ticker: str
+    stock_name: str
+    current_price: float
+    persona: str
+    analysis: str
+    biases_used: List[str]
+    confidence_level: float
+    hallucinations: List[str]
+    references: List[dict]
