@@ -289,7 +289,13 @@ INSTRUCTIONS:
         "persona_id": persona_id,
         "analysis": analysis,
         "biases_used": biases_used,
-        "confidence_level": random.uniform(0.88, 0.98),
+        "confidence_level": random.uniform(
+            *{
+                "bullish_alpha": (0.93, 0.99),
+                "value_contrarian": (0.85, 0.93),
+                "quant_momentum": (0.90, 0.97),
+            }.get(persona_id, (0.88, 0.98))
+        ),
         "hallucinations": [h for h in hallucinations if h],
         "references": references,
         "stock_data": {
