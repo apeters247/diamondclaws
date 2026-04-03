@@ -1,8 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from typing import List
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from models.database import (
     search_stocks,
@@ -18,10 +21,12 @@ from tools.yfinance_fetch import fetch_fundamentals, fetch_news, fetch_price_his
 
 router = APIRouter()
 _executor = ThreadPoolExecutor(max_workers=2)
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/stocks/search")
-async def stocks_search(q: str):
+@limiter.limit("30/minute")
+async def stocks_search(request: Request, q: str):
     """Search stocks by ticker or name."""
     if not q or len(q) < 1:
         return []
@@ -30,13 +35,15 @@ async def stocks_search(q: str):
 
 
 @router.get("/stocks/popular")
-async def stocks_popular():
+@limiter.limit("60/minute")
+async def stocks_popular(request: Request):
     """Get popular/quick-action stocks."""
     return get_popular_stocks()
 
 
 @router.get("/stocks/{ticker}")
-async def get_stock(ticker: str):
+@limiter.limit("60/minute")
+async def get_stock(request: Request, ticker: str):
     """Get stock data by ticker."""
     stock = get_stock_by_ticker(ticker)
     if not stock:
@@ -45,7 +52,8 @@ async def get_stock(ticker: str):
 
 
 @router.get("/stocks/{ticker}/history")
-async def get_stock_history(ticker: str):
+@limiter.limit("60/minute")
+async def get_stock_history(request: Request, ticker: str):
     """Get stock price history for charts."""
     stock = get_stock_by_ticker(ticker)
     if not stock:
@@ -68,19 +76,22 @@ async def get_stock_history(ticker: str):
 
 
 @router.get("/stocks")
-async def list_stocks():
+@limiter.limit("60/minute")
+async def list_stocks(request: Request):
     """List all stocks."""
     return get_all_stocks()
 
 
 @router.get("/personas")
-async def list_personas():
+@limiter.limit("60/minute")
+async def list_personas(request: Request):
     """List all available personas."""
     return get_all_personas()
 
 
 @router.get("/personas/{persona_id}")
-async def get_persona_info(persona_id: str):
+@limiter.limit("60/minute")
+async def get_persona_info(request: Request, persona_id: str):
     """Get a specific persona."""
     persona = get_persona(persona_id)
     if not persona:
@@ -89,16 +100,18 @@ async def get_persona_info(persona_id: str):
 
 
 @router.post("/analyze")
-async def analyze_stock(request: AnalysisRequest):
+@limiter.limit("10/minute")
+async def analyze_stock(request: Request, analysis_req: AnalysisRequest):
     """Generate biased analysis for a stock."""
-    result = await generate_biased_analysis(request.ticker, request.persona_id)
+    result = await generate_biased_analysis(analysis_req.ticker, analysis_req.persona_id)
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
     return result
 
 
 @router.post("/stocks/{ticker}/refresh")
-async def refresh_stock(ticker: str):
+@limiter.limit("5/minute")
+async def refresh_stock(request: Request, ticker: str):
     """Force-refresh fundamentals and news for a single ticker."""
 
     def _do_refresh():
