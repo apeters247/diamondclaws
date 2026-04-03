@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import httpx
 
-from data.personas import PERSONAS, BIAS_REFERENCES, get_persona
+from data.personas import PERSONAS, BIAS_REFERENCES, get_persona, load_soul
 from models.database import get_stock_by_ticker
 from tools.yfinance_fetch import fetch_fundamentals, fetch_news, fetch_price_history
 
@@ -98,8 +98,10 @@ async def refresh_stock_if_stale(ticker: str) -> dict:
         return stock or {}
 
 
-async def call_llm(prompt: str, model: str = DEFAULT_MODEL) -> str:
-    """Call LLM via OpenRouter."""
+async def call_llm(
+    prompt: str, model: str = DEFAULT_MODEL, system_prompt: str | None = None
+) -> str:
+    """Call LLM via OpenRouter. Optionally prepend a system prompt."""
     if not OPENROUTER_API_KEY:
         return "LLM not configured - set OPENROUTER_API_KEY"
 
@@ -107,9 +109,13 @@ async def call_llm(prompt: str, model: str = DEFAULT_MODEL) -> str:
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
     }
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
     payload = {
         "model": model,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": messages,
         "temperature": 0.8,
     }
 
@@ -225,12 +231,8 @@ async def generate_biased_analysis(ticker: str, persona_id: str) -> Dict[str, An
     earnings_str = earnings_date or "N/A"
     news_section = f"RECENT NEWS HEADLINES:\n{news_headlines}\n" if news_headlines else ""
 
-    # Build enriched prompt
-    prompt = f"""You are {persona["name"]}: {persona["style"]}
-
-Write a 2-3 paragraph equity research note for {name} ({ticker}) with institutional tone.
-
-CURRENT DATA:
+    # Build stock data block (shared by both SOUL.md and fallback paths)
+    stock_data_block = f"""CURRENT DATA:
 - Company: {name} ({ticker}) | Sector: {sector}
 - Price: ${price:.2f} | Market Cap: ${market_cap/1e9:.1f}B
 - 52W Range: ${low_52w:.2f} - ${high_52w:.2f} ({from_high_pct:.1f}% from high)
@@ -247,7 +249,23 @@ CURRENT DATA:
 - Dividend Yield: {dividend_yield:.2f}%
 - Volume (daily): {volume/1e6:.1f}M shares
 
-{news_section}
+{news_section}"""
+
+    # Try SOUL.md personality-driven path first, fall back to inline prompt
+    soul_content = load_soul(persona_id)
+
+    if soul_content:
+        # SOUL.md path: personality is the system prompt, data is the user message
+        user_prompt = f"""{stock_data_block}
+Write your equity research note now."""
+        analysis = await call_llm(user_prompt, system_prompt=soul_content)
+    else:
+        # Fallback: inline prompt (original behavior)
+        prompt = f"""You are {persona["name"]}: {persona["style"]}
+
+Write a 2-3 paragraph equity research note for {name} ({ticker}) with institutional tone.
+
+{stock_data_block}
 INSTRUCTIONS:
 - Write with institutional conviction - no hedging language
 - Frame data to support your persona's thesis and cognitive biases
@@ -258,8 +276,7 @@ INSTRUCTIONS:
 - End with your catchphrase: "{persona["catchphrase"]}"
 - Do NOT mention this is satire or for humor
 """
-
-    analysis = await call_llm(prompt)
+        analysis = await call_llm(prompt)
 
     # Extract persona's recommendation (BUY/SELL/HOLD) from analysis text
     persona_rec = "HOLD"  # default

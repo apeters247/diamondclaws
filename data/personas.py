@@ -1,4 +1,15 @@
 from datetime import datetime
+from pathlib import Path
+
+SOULS_DIR = Path(__file__).parent.parent / "souls"
+
+
+def load_soul(persona_id: str) -> str | None:
+    """Load SOUL.md personality file for a persona. Returns None if not found."""
+    soul_file = SOULS_DIR / f"{persona_id}.md"
+    if soul_file.exists():
+        return soul_file.read_text(encoding="utf-8")
+    return None
 
 
 PERSONAS = {
