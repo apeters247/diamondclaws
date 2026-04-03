@@ -11,8 +11,8 @@ from models.database import (
     get_all_stocks,
     upsert_stock,
 )
-from models.schemas import AnalysisRequest, AnalysisResponse, StockInfo, Persona
-from data.personas import get_persona, get_all_personas
+from models.schemas import AnalysisRequest, ParallelAnalysisRequest, AnalysisResponse, StockInfo, Persona
+from data.personas import get_persona, get_all_personas, PERSONAS
 from tools.analysis import generate_biased_analysis
 from tools.yfinance_fetch import fetch_fundamentals, fetch_news, fetch_price_history
 
@@ -95,6 +95,28 @@ async def analyze_stock(request: AnalysisRequest):
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
     return result
+
+
+@router.post("/analyze/parallel")
+async def analyze_stock_parallel(request: ParallelAnalysisRequest):
+    """Fire all 3 personas concurrently, return all analyses in one response."""
+    persona_ids = list(PERSONAS.keys())
+    tasks = [generate_biased_analysis(request.ticker, pid) for pid in persona_ids]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    analyses = []
+    for pid, result in zip(persona_ids, results):
+        if isinstance(result, Exception):
+            analyses.append({"persona_id": pid, "error": str(result)})
+        elif "error" in result:
+            analyses.append({"persona_id": pid, "error": result["error"]})
+        else:
+            analyses.append(result)
+
+    if not analyses:
+        raise HTTPException(status_code=404, detail=f"Stock {request.ticker} not found")
+
+    return {"ticker": request.ticker.upper(), "analyses": analyses}
 
 
 @router.post("/stocks/{ticker}/refresh")

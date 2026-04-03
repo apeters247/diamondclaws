@@ -31,6 +31,10 @@ class AnalysisRequest(BaseModel):
     persona_id: str
 
 
+class ParallelAnalysisRequest(BaseModel):
+    ticker: str
+
+
 class AnalysisResponse(BaseModel):
     ticker: str
     stock_name: str
