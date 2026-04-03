@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import httpx
 
 from data.personas import PERSONAS, BIAS_REFERENCES, get_persona, load_soul, OPENCLAW_AGENT_MAP
+from tools.distortion import apply_distortions
 from models.database import get_stock_by_ticker
 from tools.yfinance_fetch import fetch_fundamentals, fetch_news, fetch_price_history
 
@@ -251,16 +252,32 @@ async def generate_biased_analysis(ticker: str, persona_id: str) -> Dict[str, An
 
 {news_section}"""
 
+    # Apply cognitive distortion engine
+    raw_stock = {
+        "ticker": ticker, "name": name, "sector": sector,
+        "current_price": price, "high_52w": high_52w, "low_52w": low_52w,
+        "pe_ratio": pe, "forward_pe": forward_pe, "market_cap": market_cap,
+        "trailing_eps": trailing_eps, "forward_eps": forward_eps,
+        "beta": beta, "revenue_growth": revenue_growth,
+        "earnings_growth": earnings_growth, "profit_margins": profit_margins,
+        "short_pct_float": short_pct, "target_mean_price": target_mean,
+        "target_high_price": target_high, "analyst_count": analyst_count,
+        "recommendation": recommendation, "earnings_date": earnings_date,
+        "dividend_yield": dividend_yield, "volume": volume,
+    }
+    distorted_block, distortion_audit = apply_distortions(raw_stock, persona_id)
+
     # Try SOUL.md personality-driven path first, fall back to inline prompt
     soul_content = load_soul(persona_id)
 
     if soul_content:
-        # SOUL.md path: personality is the system prompt, data is the user message
-        user_prompt = f"""{stock_data_block}
-Write your equity research note now."""
+        # SOUL.md path: distorted data + personality system prompt
+        user_prompt = f"""{distorted_block}
+
+{news_section}Write your equity research note now."""
         analysis = await call_llm(user_prompt, system_prompt=soul_content)
     else:
-        # Fallback: inline prompt (original behavior)
+        # Fallback: inline prompt with neutral data (original behavior)
         prompt = f"""You are {persona["name"]}: {persona["style"]}
 
 Write a 2-3 paragraph equity research note for {name} ({ticker}) with institutional tone.
@@ -277,6 +294,7 @@ INSTRUCTIONS:
 - Do NOT mention this is satire or for humor
 """
         analysis = await call_llm(prompt)
+        distortion_audit = []  # no distortions in fallback path
 
     # Extract persona's recommendation (BUY/SELL/HOLD) from analysis text
     persona_rec = "HOLD"  # default
@@ -317,6 +335,7 @@ INSTRUCTIONS:
         ),
         "hallucinations": [h for h in hallucinations if h],
         "references": references,
+        "distortions_applied": distortion_audit,
         "source": "openclaw" if soul_content else "inline",
         "agent_id": agent_name,
         "openclaw_model": DEFAULT_MODEL if soul_content else None,
