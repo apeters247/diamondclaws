@@ -162,6 +162,18 @@ BIAS_REFERENCES = {
         "year": 1973,
         "url": "https://doi.org/10.1016/0010-0285(73)90033-9",
     },
+    "Post-Prediction Rationalization": {
+        "paper": "Fischhoff, B. (1975). Hindsight is not equal to foresight: The effect of outcome knowledge on judgment under uncertainty.",
+        "journal": "Journal of Experimental Psychology: Human Perception and Performance",
+        "year": 1975,
+        "url": "https://doi.org/10.1037/0096-1523.1.3.288",
+    },
+    "Anchoring to Technical Levels": {
+        "paper": "Tversky, A., & Kahneman, D. (1974). Judgment under Uncertainty: Heuristics and Biases.",
+        "journal": "Science",
+        "year": 1974,
+        "url": "https://doi.org/10.1126/science.185.4157.1124",
+    },
 }
 
 
