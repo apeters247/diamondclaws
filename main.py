@@ -4,10 +4,14 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
+from dotenv import load_dotenv
 
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+
+# Load environment variables from .env file (restricted 600 permissions)
+load_dotenv()
 
 from models.database import init_db
 from api import routes
