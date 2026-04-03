@@ -11,9 +11,6 @@ from pathlib import Path
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
 from models.database import (
     search_stocks,
     get_stock_by_ticker,
