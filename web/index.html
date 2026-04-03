@@ -480,12 +480,247 @@
             font-weight: 500;
         }
 
+        /* ── Distortion audit trail ───────────────────────────────── */
+        .distortions-section {
+            margin-top: 1rem;
+            padding: 0.85rem;
+            background: rgba(139,92,246,0.05);
+            border: 1px solid rgba(139,92,246,0.18);
+            border-radius: 8px;
+        }
+        .distortions-title {
+            color: var(--accent-purple);
+            font-size: 0.67rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.6rem;
+        }
+        .distortion-item {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin: 0.5rem 0;
+            padding: 0.5rem 0.65rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-purple);
+        }
+        .distortion-bias {
+            font-weight: 600;
+            color: var(--accent-purple);
+            font-size: 0.72rem;
+        }
+        .distortion-action {
+            color: var(--text-primary);
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+        }
+        .distortion-detail {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-style: italic;
+            margin-top: 0.15rem;
+        }
+        .distortion-cite {
+            color: var(--text-muted);
+            font-size: 0.62rem;
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 0.15rem;
+        }
+
+        /* Parallel card distortion (compact) */
+        .parallel-distortions {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(139,92,246,0.05);
+            border: 1px solid rgba(139,92,246,0.15);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .parallel-distortions .distortions-title { font-size: 0.58rem; margin-bottom: 0.35rem; }
+        .parallel-distortion-item {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            margin: 0.3rem 0;
+            padding-left: 0.5rem;
+            border-left: 2px solid var(--accent-purple);
+        }
+        .parallel-distortion-item strong { color: var(--accent-purple); font-size: 0.65rem; }
+        .parallel-distortion-item .cite { color: var(--text-muted); font-size: 0.58rem; }
+
         /* ── References ───────────────────────────────────────────── */
         .references { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 
         .reference-item { font-size: 0.7rem; color: var(--text-muted); margin: 0.35rem 0; line-height: 1.5; }
         .reference-item a { color: var(--accent-blue); text-decoration: none; }
         .reference-item a:hover { text-decoration: underline; }
+
+        /* ── Analyze All button ───────────────────────────────────── */
+        .btn-row { display: flex; gap: 0.5rem; }
+        .btn-row .analyze-btn { flex: 1; }
+
+        .analyze-all-btn {
+            flex: 1;
+            padding: 0.85rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--accent-purple), #4338ca);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+        .analyze-all-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(109,40,217,0.3);
+        }
+        .analyze-all-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* ── Parallel results grid ────────────────────────────────── */
+        .parallel-results {
+            display: none;
+            margin-top: 1.5rem;
+        }
+        .parallel-results.visible { display: block; animation: slideIn 0.35s ease; }
+
+        .parallel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .parallel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .parallel-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .parallel-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        @media (max-width: 900px) { .parallel-grid { grid-template-columns: 1fr; } }
+
+        .parallel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .parallel-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent);
+        }
+
+        .parallel-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .parallel-persona {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+        .agent-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.5rem;
+            background: rgba(109,40,217,0.08);
+            border: 1px solid rgba(109,40,217,0.2);
+            border-radius: 5px;
+            font-size: 0.62rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .agent-badge .agent-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent-purple);
+            display: inline-block;
+        }
+        .source-tag {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.58rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .source-tag.openclaw {
+            background: rgba(34,197,94,0.1);
+            color: #16a34a;
+            border: 1px solid rgba(34,197,94,0.25);
+        }
+        .source-tag.inline {
+            background: rgba(148,163,184,0.1);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .parallel-analysis-text {
+            font-size: 0.82rem;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .parallel-analysis-text p { margin-bottom: 0.5rem; }
+
+        .parallel-meta { border-top: 1px solid var(--border); padding-top: 0.65rem; }
+
+        .parallel-confidence {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.4rem;
+        }
+        .parallel-confidence-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600; color: var(--accent-primary);
+        }
+        .parallel-conf-bar { height: 4px; background: var(--bg-surface); border-radius: 2px; overflow: hidden; margin-bottom: 0.6rem; }
+        .parallel-conf-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+
+        .parallel-biases { margin-bottom: 0.5rem; }
+        .parallel-biases .bias-tag { font-size: 0.6rem; padding: 0.18rem 0.45rem; }
+
+        .parallel-hallucinations {
+            padding: 0.5rem;
+            background: rgba(217,119,6,0.06);
+            border: 1px solid rgba(217,119,6,0.15);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .parallel-hallucinations .hallucinations-title { font-size: 0.6rem; margin-bottom: 0.3rem; }
+        .parallel-hallucinations .hallucination-item { font-size: 0.72rem; margin: 0.25rem 0; }
+
+        .parallel-refs { font-size: 0.62rem; color: var(--text-muted); }
+        .parallel-refs a { color: var(--accent-blue); text-decoration: none; }
 
         /* ── Loading ──────────────────────────────────────────────── */
         .loading { display: none; text-align: center; padding: 2.5rem; }
@@ -600,7 +835,10 @@
             <div class="autocomplete" id="autocomplete"></div>
         </div>
         <div class="quick-stocks" id="quickStocks"></div>
-        <button class="analyze-btn" id="analyzeBtn" disabled>Generate Analysis</button>
+        <div class="btn-row">
+            <button class="analyze-btn" id="analyzeBtn" disabled>Generate Analysis</button>
+            <button class="analyze-all-btn" id="analyzeAllBtn" disabled>Fire All 3 Agents</button>
+        </div>
     </section>
 
     <div class="loading" id="loading">
@@ -691,10 +929,25 @@
             <div id="biasTags"></div>
         </div>
 
+        <div class="distortions-section" id="distortionsSection" style="display:none">
+            <div class="distortions-title">Cognitive Distortion Engine — Audit Trail</div>
+            <div id="distortionItems"></div>
+        </div>
+
         <div class="references" id="references">
             <div class="biases-title">Academic Foundation</div>
             <div id="referenceItems"></div>
         </div>
+    </section>
+
+    <section class="parallel-results" id="parallelResults">
+        <div class="parallel-header">
+            <div>
+                <div class="parallel-title" id="parallelTicker"></div>
+                <div class="parallel-subtitle">3 OpenClaw agents analyzing simultaneously</div>
+            </div>
+        </div>
+        <div class="parallel-grid" id="parallelGrid"></div>
     </section>
 </div>
 
@@ -1135,6 +1388,7 @@ searchInput.addEventListener('blur', () =>
 
 function updateAnalyzeBtn() {
     document.getElementById('analyzeBtn').disabled = !selectedTicker;
+    document.getElementById('analyzeAllBtn').disabled = !selectedTicker;
 }
 
 // ──────────────────────────────────────────
@@ -1269,6 +1523,22 @@ function displayAnalysis(data, history) {
     document.getElementById('biasTags').innerHTML =
         data.biases_used.map(b => `<span class="bias-tag">${b}</span>`).join('');
 
+    // Distortion audit trail
+    const dSection = document.getElementById('distortionsSection');
+    const dItems = document.getElementById('distortionItems');
+    if (data.distortions_applied?.length) {
+        dItems.innerHTML = data.distortions_applied.map(d => `
+            <div class="distortion-item">
+                <div class="distortion-bias">${d.bias}</div>
+                <div class="distortion-action">${d.action}</div>
+                <div class="distortion-detail">${d.detail}</div>
+                <div class="distortion-cite">${d.citation}</div>
+            </div>`).join('');
+        dSection.style.display = 'block';
+    } else {
+        dSection.style.display = 'none';
+    }
+
     document.getElementById('referenceItems').innerHTML = data.references?.length
         ? data.references.map(r => `
             <div class="reference-item">
@@ -1278,6 +1548,112 @@ function displayAnalysis(data, history) {
         : '<div class="reference-item">No references available</div>';
 
     document.getElementById('analysisResult').classList.add('visible');
+}
+
+// ──────────────────────────────────────────
+//  PARALLEL ANALYSIS (Fire All 3 Agents)
+// ──────────────────────────────────────────
+const PERSONA_COLORS = {
+    bullish_alpha: '#16a34a',
+    value_contrarian: '#2563eb',
+    quant_momentum: '#7c3aed',
+};
+const PERSONA_ICONS = {
+    bullish_alpha: '\u{1F4C8}',
+    value_contrarian: '\u{1F48E}',
+    quant_momentum: '\u{26A1}',
+};
+
+document.getElementById('analyzeAllBtn').addEventListener('click', async () => {
+    if (!selectedTicker) return;
+    document.getElementById('loading').classList.add('visible');
+    document.getElementById('analysisResult').classList.remove('visible');
+    document.getElementById('parallelResults').classList.remove('visible');
+    startLoadingCycle();
+    try {
+        const resp = await fetch(`${API_BASE}/api/analyze/parallel`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ ticker: selectedTicker }),
+        });
+        const data = await resp.json();
+        displayParallelResults(data);
+    } catch(e) { alert('Parallel analysis failed: ' + e.message); }
+    finally { stopLoadingCycle(); document.getElementById('loading').classList.remove('visible'); }
+});
+
+function displayParallelResults(data) {
+    document.getElementById('parallelTicker').textContent =
+        `${data.ticker} — Multi-Agent Analysis`;
+
+    const grid = document.getElementById('parallelGrid');
+    grid.innerHTML = data.analyses.map(a => {
+        if (a.error) {
+            return `<div class="parallel-card" style="--card-accent: #dc2626">
+                <div class="parallel-card-header">
+                    <span class="parallel-persona">${a.persona_id || 'Error'}</span>
+                </div>
+                <p style="color:var(--accent-red);font-size:0.85rem">${a.error}</p>
+            </div>`;
+        }
+
+        const color = PERSONA_COLORS[a.persona_id] || '#6d28d9';
+        const icon  = PERSONA_ICONS[a.persona_id] || '';
+        const conf  = Math.round((a.confidence_level || 0) * 100);
+        const sourceClass = (a.source || '').includes('openclaw') ? 'openclaw' : 'inline';
+        const sourceLabel = (a.source || '').includes('openclaw') ? 'OpenClaw' : 'Inline';
+        const agentId = a.agent_id || '';
+
+        const analysisHtml = (a.analysis || '')
+            .split('\n\n').filter(p => p.trim())
+            .map(p => `<p>${p}</p>`).join('');
+
+        const biasesHtml = (a.biases_used || [])
+            .map(b => `<span class="bias-tag">${b}</span>`).join('');
+
+        const hallucinationsHtml = (a.hallucinations || []).length
+            ? `<div class="parallel-hallucinations">
+                <div class="hallucinations-title">Channel Intelligence</div>
+                ${a.hallucinations.map(h => `<div class="hallucination-item">${h}</div>`).join('')}
+               </div>` : '';
+
+        const refsHtml = (a.references || [])
+            .map(r => `<span>${r.bias} (${r.year}) <a href="${r.url}" target="_blank">[DOI]</a></span>`)
+            .join(' · ');
+
+        const distortionsHtml = (a.distortions_applied || []).length
+            ? `<div class="parallel-distortions">
+                <div class="distortions-title">Distortion Engine Audit</div>
+                ${a.distortions_applied.map(d => `<div class="parallel-distortion-item">
+                    <strong>${d.bias}</strong> ${d.action}
+                    <span class="cite">${d.citation}</span>
+                </div>`).join('')}
+               </div>` : '';
+
+        return `<div class="parallel-card" style="--card-accent: ${color}">
+            <div class="parallel-card-header">
+                <span class="parallel-persona">${icon} ${a.persona || a.persona_id}</span>
+                <span class="source-tag ${sourceClass}">${sourceLabel}</span>
+            </div>
+            ${agentId ? `<div style="margin-bottom:0.6rem"><span class="agent-badge"><span class="agent-dot"></span>${agentId}</span></div>` : ''}
+            <div class="parallel-analysis-text">${analysisHtml}</div>
+            ${hallucinationsHtml}
+            ${distortionsHtml}
+            <div class="parallel-meta">
+                <div class="parallel-confidence">
+                    <span>Conviction</span>
+                    <span class="parallel-confidence-val">${conf}%</span>
+                </div>
+                <div class="parallel-conf-bar">
+                    <div class="parallel-conf-fill" style="width:${conf}%;background:${color}"></div>
+                </div>
+                <div class="parallel-biases">${biasesHtml}</div>
+                ${refsHtml ? `<div class="parallel-refs">${refsHtml}</div>` : ''}
+            </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('parallelResults').classList.add('visible');
 }
 
 // ──────────────────────────────────────────

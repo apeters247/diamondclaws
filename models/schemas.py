@@ -31,13 +31,23 @@ class AnalysisRequest(BaseModel):
     persona_id: str
 
 
+class ParallelAnalysisRequest(BaseModel):
+    ticker: str
+
+
 class AnalysisResponse(BaseModel):
     ticker: str
     stock_name: str
     current_price: float
     persona: str
+    persona_id: str
     analysis: str
     biases_used: List[str]
     confidence_level: float
     hallucinations: List[str]
     references: List[dict]
+    distortions_applied: Optional[List[dict]] = None
+    source: Optional[str] = None
+    agent_id: Optional[str] = None
+    openclaw_model: Optional[str] = None
+    stock_data: Optional[dict] = None
