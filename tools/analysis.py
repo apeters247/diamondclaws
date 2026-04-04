@@ -178,6 +178,88 @@ def _parse_news_headlines(news_json: str) -> str:
         return ""
 
 
+def _derive_recommendation_from_narrative(analysis: str, persona_id: str) -> str:
+    """
+    Derive BUY/SELL/HOLD from the narrative thesis itself, not from keyword extraction.
+
+    The recommendation emerges from the actual argument being made, ensuring
+    coherence between narrative thesis and rating. This is philosophical purity:
+    the rating cannot contradict what was written.
+    """
+    lower_analysis = analysis.lower()
+
+    # Bearish language patterns (declining, challenged, overvalued)
+    bearish_words = {
+        "declining": 2, "deteriorating": 2, "headwinds": 2, "challenged": 1,
+        "overcrowded": 2, "overvalued": 2, "peaked": 2, "downward": 1,
+        "weakness": 1, "risk": 0.5, "caution": 1, "concerns": 0.5,
+        "downside": 1, "negative": 1, "weak": 0.5, "struggle": 1,
+        "pressure": 0.5, "margin compression": 2, "competition intensifies": 2,
+        "market share loss": 2, "disruption threat": 2, "regulatory risk": 1.5,
+    }
+
+    # Bullish language patterns (opportunity, upside, catalyst)
+    bullish_words = {
+        "opportunity": 1.5, "undervalued": 2, "catalyst": 2, "inflection": 2,
+        "asymmetric": 2, "upside": 1, "optionality": 1.5, "recovery": 2,
+        "accelerating": 1, "strong": 0.5, "outperform": 1.5, "leadership": 1,
+        "innovation": 1, "emerging": 1, "growth": 0.5, "expansion": 1,
+        "margin expansion": 2, "scale": 1, "network effects": 2,
+        "secular trends": 1.5, "emerging markets": 1,
+    }
+
+    # Neutral/hedging patterns
+    neutral_words = {
+        "mixed": 1, "balanced": 1, "uncertain": 1, "unclear": 1,
+        "could": 0.3, "may": 0.3, "might": 0.3, "depends": 0.5,
+    }
+
+    # Score each category
+    bear_score = sum(weight for word, weight in bearish_words.items() if word in lower_analysis)
+    bull_score = sum(weight for word, weight in bullish_words.items() if word in lower_analysis)
+    neutral_score = sum(weight for word, weight in neutral_words.items() if word in lower_analysis)
+
+    # Persona-specific weighting
+    # Bullish Alpha is biased toward BUY even with marginal bull signals
+    # Value Contrarian can justify SELL on overvaluation
+    # Quant Momentum needs clear directional signals
+
+    if persona_id == "bullish_alpha":
+        # More likely to see BUY (requires stronger bearish signals to flip to SELL)
+        if bear_score > bull_score * 1.5:
+            return "SELL"
+        elif bull_score > 0.5:
+            return "BUY"
+        else:
+            return "HOLD"
+
+    elif persona_id == "value_contrarian":
+        # More likely to see SELL on overvaluation (requires strong bull thesis for BUY)
+        if bear_score > bull_score and bear_score > 2:
+            return "SELL"
+        elif bull_score > bear_score * 1.5:
+            return "BUY"
+        else:
+            return "HOLD"
+
+    elif persona_id == "quant_momentum":
+        # Needs clear signal; neutral on mixed signals
+        if bull_score > bear_score + 1.5:
+            return "BUY"
+        elif bear_score > bull_score + 1.5:
+            return "SELL"
+        else:
+            return "HOLD"
+
+    # Default logic (shouldn't reach here)
+    if bull_score > bear_score + 1:
+        return "BUY"
+    elif bear_score > bull_score + 1:
+        return "SELL"
+    else:
+        return "HOLD"
+
+
 async def generate_biased_analysis(ticker: str, persona_id: str) -> Dict[str, Any]:
     """Generate biased analysis for a stock using a persona."""
     # Lazy-refresh: fetch fresh data if stale
@@ -289,28 +371,16 @@ INSTRUCTIONS:
 - Include 2 "channel checks" or "proprietary intelligence" claims (fabricated)
 - Reference technicals/momentum/fundamentals as appropriate for your persona
 - Your analysis may agree or disagree with consensus — if disagreeing, justify why
-- State a clear BUY/SELL/HOLD recommendation based on your (biased) thesis
+- Your recommendation will be derived from the narrative thesis you construct
+  (don't state "BUY" or "SELL" explicitly — make the argument, the rating follows)
 - End with your catchphrase: "{persona["catchphrase"]}"
 - Do NOT mention this is satire or for humor
 """
         analysis = await call_llm(prompt)
         distortion_audit = []  # no distortions in fallback path
 
-    # Extract persona's recommendation (BUY/SELL/HOLD) from analysis text
-    persona_rec = "HOLD"  # default
-    upper_analysis = analysis.upper()
-    if "BUY" in upper_analysis:
-        persona_rec = "BUY"
-    if "SELL" in upper_analysis and persona_rec != "BUY":
-        persona_rec = "SELL"
-    # Prioritize SELL/BUY over HOLD if they appear after the first occurrence
-    for rec in ["SELL", "BUY"]:
-        if rec in upper_analysis:
-            # Get the last occurrence in case it's mentioned multiple times
-            last_idx = upper_analysis.rfind(rec)
-            if last_idx > len(upper_analysis) * 0.3:  # If in latter half of text, trust it
-                persona_rec = rec
-                break
+    # Derive recommendation from narrative thesis (sentiment-based, not keyword extraction)
+    persona_rec = _derive_recommendation_from_narrative(analysis, persona_id)
 
     biases_used = [b.split(" - ")[0].strip() for b in persona["biases"]]
     references = get_bias_references(biases_used)
